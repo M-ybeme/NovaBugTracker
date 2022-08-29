@@ -25,7 +25,7 @@ namespace NovaBugTracker.Models
         [Required]
         public string? SubmitterUserId { get; set; }
 
-        // navigation properties
+        // nav properties
         public virtual Project? Project { get; set; }
         public virtual TicketPriority? TicketPriority { get; set; }
         public virtual TicketType? TicketType { get; set; }
