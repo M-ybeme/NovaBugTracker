@@ -17,7 +17,12 @@ namespace NovaBugTracker.Models
         [Display(Name = "Last Name")]
         [StringLength(50, ErrorMessage = "The {0} must be at least {2} and a max {1} characters long.", MinimumLength = 2)]
         public string? LastName { get; set; }
+
+        [NotMapped]
         public string? FullName { get { return $"{FirstName} {LastName}"; } }
+
+        [NotMapped]
+        [DataType(DataType.Upload)]
         public IFormFile? ImageFormFile { get; set; }
         public string? ImageFileName { get; set; }
         public string? ImageFileType { get; set; }

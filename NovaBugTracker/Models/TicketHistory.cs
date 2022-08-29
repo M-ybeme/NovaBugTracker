@@ -9,6 +9,8 @@ namespace NovaBugTracker.Models
         public string? PropertyName { get; set; }
         [StringLength(200, ErrorMessage = "{0} must be less than {1} characters long.")]
         public string? Description { get; set; }
+
+        [DataType(DataType.DateTime)]
         public DateTime Created { get; set; }
         public string? OldValue { get; set; }
         public string? NewValue { get; set; }

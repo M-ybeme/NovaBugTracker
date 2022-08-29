@@ -13,7 +13,9 @@ namespace NovaBugTracker.Models
         [Required]
         [StringLength(1000, ErrorMessage = "{0} must be at least {2} and at most {1} characters long.", MinimumLength = 2)]
         public string? Description { get; set; }
+        [DataType(DataType.Date)]
         public DateTime Created { get; set; }
+        [DataType(DataType.Date)]
         public DateTime? Updated { get; set; }
         public bool Archived { get; set; }
         public bool ArchivedByProject { get; set; }

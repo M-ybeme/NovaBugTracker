@@ -9,6 +9,8 @@ namespace NovaBugTracker.Models
         [Required]
         [StringLength(500, ErrorMessage = "{0} must be at least {2} and at most {1} characters long.", MinimumLength = 2)]
         public string? Comment { get; set; }
+
+        [DataType(DataType.DateTime)]
         public DateTime Created { get; set; }
         public int TicketId { get; set; }
         [Required]
