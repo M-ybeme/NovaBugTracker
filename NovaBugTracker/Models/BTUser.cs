@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
+using System.ComponentModel;
 
 namespace NovaBugTracker.Models
 {
@@ -19,6 +20,7 @@ namespace NovaBugTracker.Models
         public string? LastName { get; set; }
 
         [NotMapped]
+        [DisplayName("Full Name")]
         public string? FullName { get { return $"{FirstName} {LastName}"; } }
 
         [NotMapped]
@@ -26,6 +28,9 @@ namespace NovaBugTracker.Models
         public IFormFile? ImageFormFile { get; set; }
         public string? ImageFileName { get; set; }
         public string? ImageFileType { get; set; }
+        public byte[]? ImageFileData { get; set; }
+
+        //foriegn key
         public int CompanyId { get; set; }
 
         // nav properties

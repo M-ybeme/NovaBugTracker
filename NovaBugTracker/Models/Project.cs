@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NovaBugTracker.Models
@@ -9,10 +10,12 @@ namespace NovaBugTracker.Models
         public int CompanyId { get; set; }
         [Required]
         [StringLength(100, ErrorMessage = "{0} must be at least {2} and at most {1} characters long.", MinimumLength = 2)]
+        [DisplayName("Project Name")]
         public string? Name { get; set; }
 
         [Required]
         [StringLength(500, ErrorMessage = "{0} must be at least {2} and at most {1} characters long.", MinimumLength = 2)]
+        [DisplayName("Project Dsicription")]
         public string? Description { get; set; }
 
         [DataType(DataType.Date)]
@@ -23,6 +26,7 @@ namespace NovaBugTracker.Models
 
         [DataType(DataType.Date)]
         public DateTime EndDate { get; set; }
+        //forieegn key
         public int ProjectPriorityId { get; set; }
 
 
@@ -31,6 +35,7 @@ namespace NovaBugTracker.Models
         public IFormFile? ImageFormFile { get; set; }
         public string? ImageFileName { get; set; }
         public string? ImageFileType { get; set; }
+        public byte[]? ImageFileData { get; set; }
         public bool Archived { get; set; }
 
         // nav properties

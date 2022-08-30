@@ -12,7 +12,10 @@ namespace NovaBugTracker.Models
 
         [DataType(DataType.DateTime)]
         public DateTime Created { get; set; }
+
+        //foreign keys
         public int TicketId { get; set; }
+
         [Required]
         public string? UserId { get; set; }
 

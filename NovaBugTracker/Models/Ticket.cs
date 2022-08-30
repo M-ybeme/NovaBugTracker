@@ -6,6 +6,7 @@ namespace NovaBugTracker.Models
     public class Ticket
     {
         public int Id { get; set; }
+
         [Required]
         [StringLength(200, ErrorMessage = "{0} must be at least {2} and at most {1} characters long.", MinimumLength = 2)]
         public string? Title { get; set; }
@@ -13,8 +14,10 @@ namespace NovaBugTracker.Models
         [Required]
         [StringLength(1000, ErrorMessage = "{0} must be at least {2} and at most {1} characters long.", MinimumLength = 2)]
         public string? Description { get; set; }
+
         [DataType(DataType.Date)]
         public DateTime Created { get; set; }
+
         [DataType(DataType.Date)]
         public DateTime? Updated { get; set; }
         public bool Archived { get; set; }
@@ -36,6 +39,8 @@ namespace NovaBugTracker.Models
         public virtual BTUser? SubmitterUser { get; set; }
         public virtual ICollection<TicketComment> Comments { get; set; } = new HashSet<TicketComment>();
         public virtual ICollection<TicketAttatchment> Attatchments { get; set; } = new HashSet<TicketAttatchment>();
+
+        //public virtual ICollection<Notification> Notifications { get; set; } = new HashSet<Notification>();
         public virtual ICollection<TicketHistory> History { get; set; } = new HashSet<TicketHistory>();
 
     }

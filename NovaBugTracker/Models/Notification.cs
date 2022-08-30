@@ -25,6 +25,7 @@ namespace NovaBugTracker.Models
         [Required]
         public string? RecipientId { get; set; }
 
+        //foriegn key
         public int NotificationTypeId { get; set; }
 
         public bool HasBeenViewed { get; set; }

@@ -18,10 +18,11 @@ namespace NovaBugTracker.Models
         public string? UserId { get; set; }
 
         [NotMapped]
-        public IFormFile? FormFile { get; set; }
-
-        public byte[]? FileData { get; set; }
-        public string? FileType { get; set; }
+        [DataType(DataType.Upload)]
+        public IFormFile? ImageFormFile { get; set; }
+        public string? ImageFileName { get; set; }
+        public byte[]? ImageFileData { get; set; }
+        public string? ImageFileType { get; set; }
 
 
         // nav properties
