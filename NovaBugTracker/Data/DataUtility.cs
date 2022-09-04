@@ -28,6 +28,11 @@ namespace NovaBugTracker.Data
             return string.IsNullOrEmpty(databaseUrl) ? connectionString : BuildConnectionString(databaseUrl);
         }
 
+        public static DateTime GetPostgresDate(DateTime datetime)
+        {
+            return DateTime.SpecifyKind(datetime, DateTimeKind.Utc);
+        }
+
         public static string BuildConnectionString(string databaseUrl)
         {
             //Provides an object representation of a uniform resource identifier (URI) and easy access to the parts of the URI.

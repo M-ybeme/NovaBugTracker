@@ -84,6 +84,34 @@
         </dd>
     </dl>
 </div>
+@if (Model.History.Count > 0)
+{
+
+    <h3>History</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Date Changed</th>
+                <th>User</th>
+                <th>Property Changed</th>
+                <th>Old Value</th>
+                <th>New Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (TicketHistory change in Model.History)
+            {
+                <tr>
+                    <td>@change.Created.ToShortDateString()</td>
+                    <td>@change.User!.FullName</td>
+                    <td>@change.PropertyName</td>
+                    <td>@change.OldValue</td>
+                    <td>@change.NewValue</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>

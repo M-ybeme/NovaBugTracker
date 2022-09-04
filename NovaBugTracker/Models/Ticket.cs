@@ -38,7 +38,7 @@ namespace NovaBugTracker.Models
         public virtual BTUser? DeveloperUser { get; set; }
         public virtual BTUser? SubmitterUser { get; set; }
         public virtual ICollection<TicketComment> Comments { get; set; } = new HashSet<TicketComment>();
-        public virtual ICollection<TicketAttatchment> Attatchments { get; set; } = new HashSet<TicketAttatchment>();
+        public virtual ICollection<TicketAttatchment> Attatchment { get; set; } = new HashSet<TicketAttatchment>();
 
         //public virtual ICollection<Notification> Notifications { get; set; } = new HashSet<Notification>();
         public virtual ICollection<TicketHistory> History { get; set; } = new HashSet<TicketHistory>();
