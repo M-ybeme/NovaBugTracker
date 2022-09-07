@@ -25,8 +25,9 @@ builder.Services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.Req
 
 //custom services
 builder.Services.AddScoped<IBTFileService, BTFileService>();
-builder.Services.AddScoped<IBTProjectService, BTProjectService>();
 builder.Services.AddScoped<IBTRolesService, BTRolesService>();
+builder.Services.AddScoped<IBTProjectService, BTProjectService>();
+builder.Services.AddScoped<IBTTicketService, BTTicketService> ();
 
 
 builder.Services.AddMvc();

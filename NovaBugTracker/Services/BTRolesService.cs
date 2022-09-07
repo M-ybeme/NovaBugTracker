@@ -71,9 +71,19 @@ namespace NovaBugTracker.Services
             return await _userManager.Users.Where(u => !usersInRole.Contains(u) && u.CompanyId == companyId).ToListAsync();
         }
 
-        public Task<bool> IsUserInRoleAsync(BTUser user, string roleName)
+        public async Task<bool> IsUserInRoleAsync(BTUser member, string roleName)
         {
-            throw new NotImplementedException();
+            try
+            {
+                bool result = await _userManager.IsInRoleAsync(member, roleName);
+                return result;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            
         }
 
         public Task RemoveUserFromRoleAsync(BTUser user, string roleName)

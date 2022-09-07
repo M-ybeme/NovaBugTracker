@@ -4,6 +4,9 @@
 
 
 @inject IBTFileService _fileService
+@inject IBTProjectService _projectService
+@inject IBTRolesService _roleService
+@inject IBTTicketService _ticketService
 @{
     ViewData["Title"] = "Details";
 }
@@ -14,70 +17,101 @@
     <h4>Project</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Name)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Created)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Created)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.StartDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.StartDate)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.EndDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.EndDate)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             Image
         </dt>
-        <dd class = "col-sm-10">
-            
-            
-                <img class="img-fluid" src="@_fileService.ConvertByteArrayToFile(Model.ImageFileData, Model.ImageFileType, (int)DefaultImage.Project)" style="width:200px;height:170px"/>
-            
+        <dd class="col-sm-10">
+
+
+            <img class="img-fluid" src="@_fileService.ConvertByteArrayToFile(Model.ImageFileData, Model.ImageFileType, (int)DefaultImage.Project)" style="width:200px;height:170px" />
+
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Archived)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Archived)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Company)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Company.CompanyName)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ProjectPriority)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ProjectPriority.Name)
         </dd>
+        <dt>
+            Project Manager
+        </dt>
+        <dd>
+            @((await _projectService.GetProjectManagerAsync(Model.Id))?.FullName)
+        </dd>
+        <dt>
+            All Project Members
+        </dt>
+        <dd>
+            @foreach (BTUser user in Model.Members)
+            {
+                <p>@user.FullName</p>
+            }
+        </dd>
+        @foreach (Ticket ticket in Model.Tickets)
+        {
+        <dt>
+            Ticket @ticket.Id belongs to this project
+        </dt>
+            <dd>
+                <ul>
+                    <li>Created: @ticket.Created.ToShortDateString()</li>
+                    <li>Description: @ticket.Description</li>
+                    <li>Ticket Satus: @ticket.TicketStatus!.Name</li>
+                    <li>Submitter Name: @ticket.SubmitterUser!.FullName</li>
+                    <li>Developer Assigned: @(ticket.DeveloperUser != null ? ticket.DeveloperUser.FullName : "Unassigned")</li>
+                </ul>
+            </dd>
+        }
+
     </dl>
-    @foreach (BTUser user in Model.Members)
-    {
-        <p>@user.FullName</p>
-    }
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    @if (User.IsInRole(nameof(BTRoles.Admin)))
+    {
+        <a asp-action="AddUsersToProject" asp-route-id="@Model?.Id">Add Member to Project Team  |</a>
+    }
     <a asp-action="Index">Back to List</a>
 </div>

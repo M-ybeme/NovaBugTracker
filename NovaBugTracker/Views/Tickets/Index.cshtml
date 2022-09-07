@@ -1,4 +1,5 @@
-﻿@model IEnumerable<NovaBugTracker.Models.Ticket>
+﻿@using NovaBugTracker.Models.Enums
+@model IEnumerable<NovaBugTracker.Models.Ticket>
 
 @{
     ViewData["Title"] = "Index";
@@ -16,12 +17,6 @@
                 @Html.DisplayNameFor(model => model.Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Created)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Updated)
             </th>
             <th>
@@ -37,10 +32,10 @@
                 @Html.DisplayNameFor(model => model.TicketStatus)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.DeveloperUser)
+                Developer
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.SubmitterUser)
+                Submitter
             </th>
             <th></th>
         </tr>
@@ -48,18 +43,14 @@
     <tbody>
         @foreach (var item in Model)
         {
+            BTUser? developer = item.DeveloperUser;
+
             <tr>
                 <td>
                     @Html.DisplayFor(modelItem => item.Title)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Created)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Updated)
+                    @(item.Updated ?? item.Created)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Project!.Name)
@@ -73,9 +64,19 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.TicketStatus!.Name)
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DeveloperUser!.FullName)
-                </td>
+                @if ((User.IsInRole(nameof(BTRoles.Admin)) || User.IsInRole(nameof(BTRoles.ProjectManager))) &&
+               developer == null)
+                {
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary" asp-action="AssignTicket" asp-route-id="@item.Id">Assign</a>
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        @(item.DeveloperUser?.FullName ?? "Unassigned")
+                    </td>
+                }
                 <td>
                     @Html.DisplayFor(modelItem => item.SubmitterUser!.FullName)
                 </td>

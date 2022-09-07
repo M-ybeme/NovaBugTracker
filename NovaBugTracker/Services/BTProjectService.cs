@@ -12,11 +12,13 @@ namespace NovaBugTracker.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<BTUser> _userManager;
+        private readonly IBTRolesService _roleService;
 
-        public BTProjectService(ApplicationDbContext context, UserManager<BTUser> userManager)
+        public BTProjectService(ApplicationDbContext context, UserManager<BTUser> userManager, IBTRolesService roleService)
         {
             _context = context;
             _userManager = userManager;
+            _roleService = roleService;
         }
 
         public async Task AddProjectAsync(Project project)
@@ -29,27 +31,86 @@ namespace NovaBugTracker.Services
             catch { throw; }
         }
 
-        public async Task AddProjectManagerAsync(string userId, int projectId)
+        public async Task<bool> AddProjectManagerAsync(string userId, int projectId)
         {
-            await RemoveProjectManagerAsync(projectId);
-            await AddUserToProjectAsync(userId, projectId);
+
+            try
+            {
+                BTUser currentPM = await GetProjectManagerAsync(projectId)!;
+                BTUser? selectedPM = await _context.Users.FindAsync(userId)!;
+                
+                
+                //remove current PM
+                if(currentPM != null)
+                {
+                    await RemoveProjectManagerAsync(projectId);
+                }
+                //Add new PM
+                try
+                {
+                    await AddUserToProjectAsync(selectedPM!, projectId);
+                    return true;
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            //await RemoveProjectManagerAsync(projectId);
+            //await AddUserToProjectAsync(userId, projectId);
+        }
+
+        public async Task<bool> AddUserToProjectAsync(BTUser user, int projectId)
+        {
+            try
+            {
+                
+                Project project = await GetProjectByIdAsync(projectId);
+
+                bool onProject = !project.Members.Any(m => m.Id == user.Id);
+
+                ///if on prject is true run true else return false.
+
+                //check if BTUser is on project
+                if (onProject)
+                {
+                    project.Members.Add(user);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+
+                return false;
+
+                //if (project.CompanyId != user.CompanyId) return false;
+
+                //if (!project.Members.Contains(user)) project.Members.Add(user);
+
+                //await _context.SaveChangesAsync();
+                //return true;
+            }
+            catch { throw; }
         }
 
         public async Task<bool> AddUserToProjectAsync(string userId, int projectId)
         {
             try
             {
-                BTUser user = _context.Users.Find(userId)!;
-                Project project = await GetProjectByIdAsync(projectId);
-
-                if (project.CompanyId != user.CompanyId) return false;
-
-                if (!project.Members.Contains(user)) project.Members.Add(user);
-
-                await _context.SaveChangesAsync();
+                BTUser btUser = _context.Users.FirstOrDefault(u => u.Id == userId)!;
+                await AddUserToProjectAsync(btUser, projectId);
                 return true;
             }
-            catch { throw; }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task ArchiveProjectAsync(int projectId)
@@ -73,7 +134,7 @@ namespace NovaBugTracker.Services
 
         public async Task<List<BTUser>> GetAllProjectMembersExceptPMAsync(int projectId)
         {
-            BTUser? pm = await GetProjectManagerAsync(projectId);
+            BTUser? pm = await GetProjectManagerAsync(projectId)!;
             Project project = await GetProjectByIdAsync(projectId);
 
             return pm == null ? project.Members.Where(m => m != pm).ToList()
@@ -84,6 +145,8 @@ namespace NovaBugTracker.Services
         {
             try
             {
+                
+
                 return await _context.Projects!
                     .Where(p => p.CompanyId == companyId && !p.Archived)
                     .Include(p => p.Tickets).ThenInclude(t => t.TicketPriority)
@@ -148,7 +211,7 @@ namespace NovaBugTracker.Services
             catch { throw; }
         }
 
-        public async Task<BTUser?> GetProjectManagerAsync(int projectId)
+        public async Task<BTUser>? GetProjectManagerAsync(int projectId)
         {
             try
             {
@@ -156,13 +219,13 @@ namespace NovaBugTracker.Services
 
                 foreach (BTUser member in project.Members)
                 {
-                    if (await _userManager.IsInRoleAsync(member, nameof(BTRoles.ProjectManager)))
+                    if (await _roleService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
                     {
                         return member;
                     }
                 }
 
-                return null;
+                return null!;
             }
             catch { throw; }
         }
@@ -187,7 +250,7 @@ namespace NovaBugTracker.Services
 
             foreach (Project project in companyProjects)
             {
-                if (await GetProjectManagerAsync(project.Id) == null) unassignedProjects.Add(project);
+                if (await GetProjectManagerAsync(project.Id)! == null) unassignedProjects.Add(project);
             }
 
             return unassignedProjects;
@@ -207,29 +270,91 @@ namespace NovaBugTracker.Services
 
         public async Task<bool> IsUserOnProjectAsync(string userId, int projectId)
         {
-            Project project = await GetProjectByIdAsync(projectId);
 
-            return project.Members.Any(m => m.Id == userId);
+            try
+            {
+                Project? project = await GetProjectByIdAsync(projectId);
+                if (project == null)
+                {
+                    //checked to see if the user(Id) is async project member
+                    return project!.Members.Any(m => m.Id == userId); 
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            //Project project = await GetProjectByIdAsync(projectId);
+
+            //return project.Members.Any(m => m.Id == userId);
         }
 
         public async Task RemoveProjectManagerAsync(int projectId)
         {
-            Project project = await GetProjectByIdAsync(projectId);
-            BTUser? pm = await GetProjectManagerAsync(projectId);
+            try
+            {
+                Project project = await GetProjectByIdAsync(projectId);
 
-            if (pm != null) project.Members.Remove(pm);
+                foreach (BTUser member in project.Members)
+                {
+                    if (await _roleService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
+                    {
+                        //Remove BTUser from Project
+                        await RemoveUserFromProjectAsync(member, projectId);
+                    }
+                }
+            }
+            catch (Exception)
+            {
 
-            await _context.SaveChangesAsync();
+                throw;
+            }
+            //Project project = await GetProjectByIdAsync(projectId);
+            //BTUser? pm = await GetProjectManagerAsync(projectId)!;
+
+            //if (pm != null)
+            //{ project.Members.Remove(pm);
+
+            //  await _context.SaveChangesAsync();
+            //}
         }
 
-        public async Task RemoveUserFromProjectAsync(string userId, int projectId)
+        public async Task<bool> RemoveUserFromProjectAsync(BTUser user, int projectId)
         {
-            Project project = await GetProjectByIdAsync(projectId);
-            BTUser user = await _userManager.FindByIdAsync(userId);
+            try
+            {
+                Project? project = await GetProjectByIdAsync(projectId);
 
-            project.Members.Remove(user);
+                bool onProject = project.Members.Any(m => m.Id == user.Id);
 
-            await _context.SaveChangesAsync();
+                ///if on prject is true run true else return false.
+
+                //check if BTUser is on project
+                if(onProject)
+                {
+                    project.Members.Remove(user);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+
+            //Project project = await GetProjectByIdAsync(projectId);
+            //BTUser user = await _userManager.FindByIdAsync(userId);
+
+            //project.Members.Remove(user);
+
+            //await _context.SaveChangesAsync();
         }
 
         public async Task RestoreProjectAsync(int projectId)

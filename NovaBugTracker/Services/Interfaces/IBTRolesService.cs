@@ -9,7 +9,7 @@ namespace NovaBugTracker.Services.Interfaces
         public Task AddUserToRoleAsync(BTUser user, string roleName);
         //New
         public Task<List<IdentityRole>> GetBTRolesAsync();
-        public Task<bool> IsUserInRoleAsync(BTUser user, string roleName);
+        public Task<bool> IsUserInRoleAsync(BTUser member, string roleName);
         //New
         public Task<string> GetRoleNameByIdAsync(string roleId);
         public Task<List<BTUser>> GetUsersInRoleAsync(string roleName, int companyId);

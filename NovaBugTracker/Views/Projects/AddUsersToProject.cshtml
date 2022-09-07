@@ -1,0 +1,23 @@
+﻿@model Project
+
+@{
+	ViewData["Title"] = "Assign Users Project";
+}
+<h3>@Model.Name</h3>
+<p>@Model.Description</p>
+<hr />
+<form asp-action="AddUsersToProject">
+	<input type="hidden" asp-for="@Model.Id" />
+
+	<div class="row">
+		<div class="col-6">
+			<h5>Developers</h5>
+			<select multiple name="developers" asp-items="@ViewBag.Developers"></select>
+		</div>
+		<div class="col-6">
+			<h5>Submitters</h5>
+			<select multiple name="submitters" asp-items="@ViewBag.Submitters"></select>
+		</div>
+	</div>
+	<input type="submit" />
+</form>

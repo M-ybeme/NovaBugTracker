@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using NovaBugTracker.Data;
 using NovaBugTracker.Models;
 using NovaBugTracker.Models.Enums;
+using NovaBugTracker.Services;
+using NovaBugTracker.Services.Interfaces;
 
 namespace NovaBugTracker.Controllers
 {
@@ -19,11 +21,21 @@ namespace NovaBugTracker.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<BTUser> _userManager;
+        private readonly IBTTicketService _ticketService;
+        private readonly IBTRolesService _rolesService;
+        private readonly IBTProjectService _projectService;
 
-        public TicketsController(ApplicationDbContext context, UserManager<BTUser> userManager)
+        public TicketsController(ApplicationDbContext context,
+                                 UserManager<BTUser> userManager, 
+                                 IBTTicketService ticketService, 
+                                 IBTRolesService rolesService, 
+                                 IBTProjectService projectService)
         {
             _context = context;
             _userManager = userManager;
+            _ticketService = ticketService;
+            _rolesService = rolesService;
+            _projectService = projectService;
         }
 
         // GET: Tickets
@@ -63,15 +75,32 @@ namespace NovaBugTracker.Controllers
         {
             string userId = _userManager.GetUserId(User);
 
-            List<Ticket> tickets = await _context.Tickets!
-                .Where(t => (t.SubmitterUserId == userId || t.DeveloperUserId == userId) && !t.Archived)
-                .Include(t => t.DeveloperUser)
-                .Include(t => t.Project)
-                .Include(t => t.SubmitterUser)
-                .Include(t => t.TicketPriority)
-                .Include(t => t.TicketStatus)
-                .Include(t => t.TicketType)
-                .ToListAsync();
+            List<Ticket> tickets = new();
+            if (User.IsInRole(nameof(BTRoles.ProjectManager)))
+            {
+                BTUser user = await _userManager.GetUserAsync(User);
+                tickets = await _context.Tickets!
+                    .Where(t => t.Project!.Members.Contains(user))
+                    .Include(t => t.DeveloperUser)
+                    .Include(t => t.Project)
+                    .Include(t => t.SubmitterUser)
+                    .Include(t => t.TicketPriority)
+                    .Include(t => t.TicketStatus)
+                    .Include(t => t.TicketType)
+                    .ToListAsync();
+            }
+            else
+            {
+                tickets = await _context.Tickets!
+                    .Where(t => (t.SubmitterUserId == userId || t.DeveloperUserId == userId) && !t.Archived)
+                    .Include(t => t.DeveloperUser)
+                    .Include(t => t.Project)
+                    .Include(t => t.SubmitterUser)
+                    .Include(t => t.TicketPriority)
+                    .Include(t => t.TicketStatus)
+                    .Include(t => t.TicketType)
+                    .ToListAsync();
+            }
 
             return View("Index", tickets);
         }
@@ -92,6 +121,49 @@ namespace NovaBugTracker.Controllers
 
             return View("Index", tickets);
         }
+
+        public async Task<IActionResult> UnassignedTickets()
+        {
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            ViewData["Title"] = "Unassigned Tickets";
+            return View("Index", await _ticketService.GetUnassignedTicketsAsync(companyId));
+        }
+
+        [Authorize(Roles = $"{nameof(BTRoles.Admin)},{nameof(BTRoles.ProjectManager)}")]
+        public async Task<IActionResult> AssignTicket(int id)
+        {
+            Ticket ticket = await _ticketService.GetTicketByIdAsync(id);
+
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            List<BTUser> developers = await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+
+            ViewData["DeveloperIds"] = new SelectList(developers, "Id", "FullName");
+            return View(ticket);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignTicket(int TicketId, string DeveloperId)
+        {
+            Ticket ticket = await _ticketService.GetTicketByIdAsync(TicketId);
+
+            if (DeveloperId == "unassigned")
+            {
+                ticket.DeveloperUserId = null;
+                await _ticketService.UpdateTicketAsync(ticket);
+            }
+            else
+            {
+                if (!ticket.Project!.Members.Any(m => m.Id == DeveloperId))
+                    await _projectService.AddUserToProjectAsync(DeveloperId, ticket.ProjectId);
+
+                await _ticketService.AssignDeveloperAsync(TicketId, DeveloperId);
+            }
+
+            return RedirectToAction("Details", new { id = TicketId });
+        }
+
 
         // GET: Tickets/Details/5
         public async Task<IActionResult> Details(int? id)

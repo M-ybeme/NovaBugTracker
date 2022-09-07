@@ -37,14 +37,14 @@ namespace NovaBugTracker.Controllers
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            var projects = await _context.Projects!
-                 .Where(p => !p.Archived)
-                 .Include(p => p.Company)
-                 .Include(p => p.ProjectPriority)
-                 .ToListAsync();
+            
+            var companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            var projects = await _projectService.GetAllProjectsByCompanyIdAsync(companyId);
 
+            
             return View(projects);
         }
+
 
         public async Task<IActionResult> ArchivedProjects()
         {
@@ -76,6 +76,13 @@ namespace NovaBugTracker.Controllers
             return View("Index", allProjects);
         }
 
+        public async Task<IActionResult> UnassignedProjects()
+        {
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            List<Project> unassignedProjects = await _projectService.GetUnassignedProjectsAsync(companyId);
+            return View("Index", unassignedProjects);
+        }
+
         //Get:
 
         [Authorize(Roles = nameof(BTRoles.Admin))]
@@ -87,10 +94,14 @@ namespace NovaBugTracker.Controllers
             }
 
             AssignPMViewModel model = new();
+            //Get Company ID
             int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
-
             model.Project = await _projectService.GetProjectByIdAsync(id.Value);
-            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName");
+
+            //get PM if it exixts.
+            string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
+            //service calll to roleservice to get all pm for the company.
+            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
 
 
             return View(model);
@@ -104,17 +115,25 @@ namespace NovaBugTracker.Controllers
         {
             if (!string.IsNullOrEmpty(model.PMId))
             {
-                //AddMP to project and TODO: Enhance this process.
-                Project project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
-                BTUser? projectManager = await _context.Users.FindAsync(model.PMId);
-
-                project.Members.Add(projectManager!);
-
-                await _context.SaveChangesAsync();
+                await _projectService.AddProjectManagerAsync(model.PMId, model.Project!.Id);                
 
                 return RedirectToAction(nameof(Index));
             }
-            return RedirectToAction(nameof(AssignProjectManager), new { id = model.Project!.Id});
+            ModelState.AddModelError("PMId", "No Project Manager choosen! Please Select a PM!");
+
+            //companyId
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            model.Project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
+
+            //get PM if it exixts.
+            string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
+
+            //service calll to roleservice to get all pm for the company.
+            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
+
+
+            return View(model);
         }
 
 
@@ -136,6 +155,66 @@ namespace NovaBugTracker.Controllers
             return View(project);
         }
 
+        //get:
+        [Authorize(Roles = $"{nameof(BTRoles.Admin)},{nameof(BTRoles.ProjectManager)}")]
+        public async Task<IActionResult> AddUsersToProject(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            List<BTUser> submitters = await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId);
+            List<BTUser> developers = await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+
+            List<BTUser> assignedSubmitters = await _projectService.GetProjectMembersByRoleAsync(id.Value, nameof(BTRoles.Submitter));
+            List<BTUser> assignedDevelopers = await _projectService.GetProjectMembersByRoleAsync(id.Value, nameof(BTRoles.Developer));
+
+            Project project = await _projectService.GetProjectByIdAsync(id.Value);
+
+            ViewData["Developers"] = new MultiSelectList(developers, "Id", "FullName", assignedDevelopers.Select(d => d.Id));
+            ViewData["Submitters"] = new MultiSelectList(submitters, "Id", "FullName", assignedSubmitters.Select(d => d.Id));
+
+            return View(project);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = $"{nameof(BTRoles.Admin)},{nameof(BTRoles.ProjectManager)}")]
+        public async Task<IActionResult> AddUsersToProject(int id, List<string> submitters, List<string> developers)
+        {
+            List<string> existingMembers = (await _projectService.GetAllProjectMembersExceptPMAsync(id)).Select(m => m.Id).ToList();
+
+            foreach (string submitter in submitters)
+            {
+                await _projectService.AddUserToProjectAsync(submitter, id);
+            }
+
+            foreach (string developer in developers)
+            {
+                await _projectService.AddUserToProjectAsync(developer, id);
+            }
+
+            foreach (string existingMember in existingMembers)
+            {
+                if (!submitters.Contains(existingMember) && !developers.Contains(existingMember))
+                {
+                    var user = _context.Users.Find(existingMember);
+                    await _projectService.RemoveUserFromProjectAsync(user!, id);
+                }
+            }
+
+            return RedirectToAction("Details", new { id = id });
+        }
+
+        public async Task<IActionResult> RemoveUserFromProject(int id, string user)
+        {
+            await _projectService.RemoveUserFromProjectAsync(_context.Users.Find(user)!, id);
+            return RedirectToAction("Details", new { id = id });
+        }
+
+
+
         // GET: Projects/Create
         [Authorize(Roles = $"{nameof(BTRoles.Admin)},{nameof(BTRoles.ProjectManager)}")]
         public IActionResult Create()
@@ -154,12 +233,14 @@ namespace NovaBugTracker.Controllers
         [Authorize(Roles = $"{nameof(BTRoles.Admin)},{nameof(BTRoles.ProjectManager)}")]
         public async Task<IActionResult> Create([Bind("Id,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageFormFile")] Project project)
         {
-            //ModelState.Remove("Created");
+            
 
             if (ModelState.IsValid)
             {
                 project.CompanyId = (await _userManager.GetUserAsync(User)).CompanyId;
-                project.Created = DateTime.Now;
+                project.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+                project.StartDate = DateTime.SpecifyKind(project.StartDate, DateTimeKind.Utc);
+                project.EndDate = DateTime.SpecifyKind(project.EndDate, DateTimeKind.Utc);
 
                 if (project.ImageFormFile != null)
                 {
