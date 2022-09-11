@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NovaBugTracker.Data;
+using NovaBugTracker.Extensions;
 using NovaBugTracker.Models;
 using NovaBugTracker.Models.Enums;
 using NovaBugTracker.Services;
@@ -24,18 +25,21 @@ namespace NovaBugTracker.Controllers
         private readonly IBTTicketService _ticketService;
         private readonly IBTRolesService _rolesService;
         private readonly IBTProjectService _projectService;
+        private readonly IBTFileService _fileService;
 
         public TicketsController(ApplicationDbContext context,
-                                 UserManager<BTUser> userManager, 
-                                 IBTTicketService ticketService, 
-                                 IBTRolesService rolesService, 
-                                 IBTProjectService projectService)
+                                 UserManager<BTUser> userManager,
+                                 IBTTicketService ticketService,
+                                 IBTRolesService rolesService,
+                                 IBTProjectService projectService,
+                                 IBTFileService fileService)
         {
             _context = context;
             _userManager = userManager;
             _ticketService = ticketService;
             _rolesService = rolesService;
             _projectService = projectService;
+            _fileService = fileService;
         }
 
         // GET: Tickets
@@ -112,7 +116,7 @@ namespace NovaBugTracker.Controllers
             List<Ticket> tickets = await _context.Tickets!
                 .Where(t => t.Project!.CompanyId == companyId && !t.Archived)
                 .Include(t => t.DeveloperUser)
-                //.Include(t => t.Project)
+                .Include(t => t.Project)
                 .Include(t => t.SubmitterUser)
                 .Include(t => t.TicketPriority)
                 .Include(t => t.TicketStatus)
@@ -124,7 +128,7 @@ namespace NovaBugTracker.Controllers
 
         public async Task<IActionResult> UnassignedTickets()
         {
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            int companyId = User.Identity!.GetCompanyId();
 
             ViewData["Title"] = "Unassigned Tickets";
             return View("Index", await _ticketService.GetUnassignedTicketsAsync(companyId));
@@ -135,7 +139,7 @@ namespace NovaBugTracker.Controllers
         {
             Ticket ticket = await _ticketService.GetTicketByIdAsync(id);
 
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            int companyId = User.Identity!.GetCompanyId();
             List<BTUser> developers = await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
 
             ViewData["DeveloperIds"] = new SelectList(developers, "Id", "FullName");
@@ -164,6 +168,62 @@ namespace NovaBugTracker.Controllers
             return RedirectToAction("Details", new { id = TicketId });
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTicketAttachment([Bind("Id, Description, TicketId")] TicketAttatchment ticketAttatchment, IFormFile formFile)
+        {
+            string statusMessage;
+
+            ModelState.Remove("UserId");
+
+            if (ModelState.IsValid && formFile != null)
+            {
+                ticketAttatchment.ImageFileData = await _fileService.ConvertFileToByteArrayAsync(formFile);
+                ticketAttatchment.ImageFileName = formFile.FileName;
+                ticketAttatchment.ImageFileType = formFile.ContentType;
+
+                ticketAttatchment.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+                ticketAttatchment.UserId = _userManager.GetUserId(User);
+
+                await _ticketService.AddTicketAttachmentAsync(ticketAttatchment);
+                statusMessage = "Success: New atachment added to ticket.";
+            }
+            else
+            {
+                statusMessage = "Error: Invalide data.";
+            }
+
+            return RedirectToAction("Details", new {id = ticketAttatchment.TicketId, message = statusMessage});
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTicketComment([Bind("Id,Comment,Created,TicketId,UserId")] TicketComment ticketComment)
+        {
+            ModelState.Remove("UserId");
+            if (ModelState.IsValid)
+            {
+                ticketComment.UserId = _userManager.GetUserId(User);
+                ticketComment.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+                _context.Add(ticketComment);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Details", "Tickets", new { id = ticketComment.TicketId });
+            }
+            return View(Details);
+        }
+
+        public async Task<IActionResult> ShowFile(int id)
+        {
+            TicketAttatchment attachment = await _ticketService.GetTicketAttachmentByIdAsync(id);
+            string fileName = attachment.ImageFileName!;
+            byte[] fileData = attachment.ImageFileData!;
+            string ext = Path.GetExtension(fileName).Replace(".", "");
+
+            Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");
+            return File(fileData, $"application/{ext}");
+        }
+
+
 
         // GET: Tickets/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -188,6 +248,8 @@ namespace NovaBugTracker.Controllers
 
             return View(ticket);
         }
+
+        
 
         // GET: Tickets/Create
         public IActionResult Create()

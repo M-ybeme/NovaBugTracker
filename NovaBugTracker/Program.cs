@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NovaBugTracker.Data;
+using NovaBugTracker.Extensions;
 using NovaBugTracker.Models;
 using NovaBugTracker.Services;
 using NovaBugTracker.Services.Interfaces;
@@ -19,15 +20,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultUI()
-    .AddDefaultTokenProviders();
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddClaimsPrincipalFactory<BTUserClaimsPrincipalFactory>()
+                .AddDefaultUI()
+                .AddDefaultTokenProviders();
 
 //custom services
 builder.Services.AddScoped<IBTFileService, BTFileService>();
 builder.Services.AddScoped<IBTRolesService, BTRolesService>();
 builder.Services.AddScoped<IBTProjectService, BTProjectService>();
 builder.Services.AddScoped<IBTTicketService, BTTicketService> ();
+builder.Services.AddScoped<IBTCompanyService, BTCompanyService>();
 
 
 builder.Services.AddMvc();

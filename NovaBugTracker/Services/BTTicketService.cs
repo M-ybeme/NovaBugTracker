@@ -77,8 +77,8 @@ namespace NovaBugTracker.Services
             {
                 return await _context.Tickets!
                     .Where(t => t.Project!.CompanyId == companyId && !t.Archived)
-                    .Include(t => t.Project).ThenInclude(p => p.Members)
-                    .Include(t => t.Project).ThenInclude(p => p.ProjectPriority)
+                    .Include(t => t.Project).ThenInclude(p => p!.Members)
+                    .Include(t => t.Project).ThenInclude(p => p!.ProjectPriority)
                     .Include(t => t.TicketPriority)
                     .Include(t => t.TicketType)
                     .Include(t => t.TicketStatus)
@@ -98,8 +98,8 @@ namespace NovaBugTracker.Services
             {
                 return await _context.Tickets!
                     .Where(t => t.Project!.CompanyId == companyId && t.Archived)
-                    .Include(t => t.Project).ThenInclude(p => p.Members)
-                    .Include(t => t.Project).ThenInclude(p => p.ProjectPriority)
+                    .Include(t => t.Project).ThenInclude(p => p!.Members)
+                    .Include(t => t.Project).ThenInclude(p => p!.ProjectPriority)
                     .Include(t => t.TicketPriority)
                     .Include(t => t.TicketType)
                     .Include(t => t.TicketStatus)
@@ -140,11 +140,11 @@ namespace NovaBugTracker.Services
         {
             try
             {
-                TicketAttatchment? attachment = await _context.TicketAttatchments!.Where(a => a.Id == ticketAttachmentId)
-                    .Include(a => a.Ticket)
-                    .Include(a => a.User)
-                    .FirstOrDefaultAsync();
-
+                TicketAttatchment? attachment = await _context.TicketAttatchments!
+                                                              .Where(a => a.Id == ticketAttachmentId)
+                                                              .Include(a => a.Ticket)
+                                                              .Include(a => a.User)
+                                                              .FirstOrDefaultAsync();
                 return attachment!;
             }
             catch { throw; }
@@ -155,8 +155,8 @@ namespace NovaBugTracker.Services
             try
             {
                 Ticket? ticket = await _context.Tickets!.Where(t => t.Id == ticketId)
-                    .Include(t => t.Project).ThenInclude(p => p.Members)
-                    .Include(t => t.Project).ThenInclude(p => p.ProjectPriority)
+                    .Include(t => t.Project).ThenInclude(p => p!.Members)
+                    .Include(t => t.Project).ThenInclude(p => p!.ProjectPriority)
                     .Include(t => t.TicketPriority)
                     .Include(t => t.TicketType)
                     .Include(t => t.TicketStatus)
@@ -180,8 +180,8 @@ namespace NovaBugTracker.Services
                     .Where(t => (t.DeveloperUserId == userId || t.SubmitterUserId == userId)
                                     && t.Project!.CompanyId == companyId
                                     && !t.Archived)
-                    .Include(t => t.Project).ThenInclude(p => p.Members)
-                    .Include(t => t.Project).ThenInclude(p => p.ProjectPriority)
+                    .Include(t => t.Project).ThenInclude(p => p!.Members)
+                    .Include(t => t.Project).ThenInclude(p => p!.ProjectPriority)
                     .Include(t => t.TicketPriority)
                     .Include(t => t.TicketType)
                     .Include(t => t.TicketStatus)
@@ -208,7 +208,7 @@ namespace NovaBugTracker.Services
                     .Include(t => t.Comments).ThenInclude(c => c.User)
                     .Include(t => t.Attatchment).ThenInclude(a => a.User)
                     .Include(t => t.History).ThenInclude(h => h.User)
-                    .Include(t => t.Project).ThenInclude(p => p.ProjectPriority)
+                    .Include(t => t.Project).ThenInclude(p => p!.ProjectPriority)
                     .ToListAsync();
             }
             catch { throw; }

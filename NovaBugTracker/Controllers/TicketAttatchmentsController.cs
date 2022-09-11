@@ -46,6 +46,9 @@ namespace NovaBugTracker.Controllers
             return View(ticketAttatchment);
         }
 
+
+
+
         // GET: TicketAttatchments/Create
         public IActionResult Create()
         {

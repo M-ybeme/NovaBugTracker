@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using NovaBugTracker.Extensions;
+using System.ComponentModel;
 
 namespace NovaBugTracker.Models
 {
@@ -18,7 +20,10 @@ namespace NovaBugTracker.Models
         public string? UserId { get; set; }
 
         [NotMapped]
+        [DisplayName("Select a file")]
         [DataType(DataType.Upload)]
+        [MaxFileSize(1024 * 1024)]
+        [AllowedExtensions(new string[] { ".jpg", ".png", ".doc", ".docx", ".xls", ".xlsx", ".pdf" })]
         public IFormFile? ImageFormFile { get; set; }
         public string? ImageFileName { get; set; }
         public byte[]? ImageFileData { get; set; }

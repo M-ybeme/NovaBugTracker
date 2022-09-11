@@ -11,21 +11,43 @@ namespace NovaBugTracker.Services
     {
         private readonly UserManager<BTUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ApplicationDbContext _context;
 
         public BTRolesService(UserManager<BTUser> userManager,
-                        RoleManager<IdentityRole> roleManager)
+                        RoleManager<IdentityRole> roleManager,
+                        ApplicationDbContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _context = context;
         }
-        public async Task AddUserToRoleAsync(BTUser user, string roleName)
+        public async Task<bool> AddUserToRoleAsync(BTUser user, string roleName)
         {
-            await _userManager.AddToRoleAsync(user, roleName);
+            try
+            {
+                bool result = (await _userManager.AddToRoleAsync(user, roleName)).Succeeded;
+                return result;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
-        public Task<List<IdentityRole>> GetBTRolesAsync()
+        public async Task<List<IdentityRole>> GetRolesAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                List<IdentityRole> result = new ();
+                result = await _context.Roles.ToListAsync();
+                return result;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public Task<string> GetRoleNameByIdAsync(string roleId)
@@ -38,9 +60,18 @@ namespace NovaBugTracker.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<string>> GetUserRolesAsync(BTUser user)
+        public async Task<IEnumerable<string>> GetUserRolesAsync(BTUser user)
         {
-            throw new NotImplementedException();
+            try
+            {
+                IEnumerable<string> result = await _userManager.GetRolesAsync(user);
+                return result;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task<List<BTUser>> GetUsersInRoleAsync(string roleName, int companyId)
@@ -86,14 +117,32 @@ namespace NovaBugTracker.Services
             
         }
 
-        public Task RemoveUserFromRoleAsync(BTUser user, string roleName)
+        public async Task<bool> RemoveUserFromRoleAsync(BTUser user, string roleName)
         {
-            throw new NotImplementedException();
+            try
+            {
+                bool result = (await _userManager.RemoveFromRoleAsync(user, roleName)).Succeeded;
+                return result;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
-        public Task RemoveUserFromRolesAsync(BTUser user, IEnumerable<string> roles)
+        public async Task<bool> RemoveUserFromRolesAsync(BTUser user, IEnumerable<string> roles)
         {
-            throw new NotImplementedException();
+            try
+            {
+                bool result = (await _userManager.RemoveFromRolesAsync(user, roles)).Succeeded;
+                return result;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }

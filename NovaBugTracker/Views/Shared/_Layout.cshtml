@@ -72,10 +72,9 @@
                                         <i class="fs-5 bi-file-earmark-font"></i><span class="ms-1 d-none d-sm-inline">Admin</span>
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdown">
+                                        <li><a class="dropdown-item" asp-controller="Projects" asp-action="AssignProjectManager">AssignProjectManager</a></li>
                                         <li><a class="dropdown-item" asp-controller="Projects" asp-action="UnassignedProjects">Unassigned Projects</a></li>
-                                    </ul>
-                                    <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdown">
-                                        <li><a class="dropdown-item" asp-controller="Projects" asp-action="UnassignedProjects">Unassigned Projects</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Companies" asp-action="ManageUserRoles">Manage User Roles</a></li>
                                     </ul>
                                 </li>
                             }

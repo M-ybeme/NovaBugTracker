@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NovaBugTracker.Data;
+using NovaBugTracker.Extensions;
 using NovaBugTracker.Models;
 using NovaBugTracker.Models.Enums;
 using NovaBugTracker.Models.ViewModels;
@@ -37,8 +38,9 @@ namespace NovaBugTracker.Controllers
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            
-            var companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            //Get CompanyId
+            //int companyId = User.Identity!.GetCompanyId();
+            int companyId = User.Identity!.GetCompanyId();
             var projects = await _projectService.GetAllProjectsByCompanyIdAsync(companyId);
 
             
@@ -48,7 +50,7 @@ namespace NovaBugTracker.Controllers
 
         public async Task<IActionResult> ArchivedProjects()
         {
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            int companyId = User.Identity!.GetCompanyId();
 
             return View(await _projectService.GetArchivedProjectsAsync(companyId));
         }
@@ -69,7 +71,7 @@ namespace NovaBugTracker.Controllers
 
         public async Task<IActionResult> AllProjects()
         {
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            int companyId = User.Identity!.GetCompanyId();
 
             List<Project> allProjects = await _projectService.GetAllProjectsByCompanyIdAsync(companyId);
 
@@ -78,7 +80,7 @@ namespace NovaBugTracker.Controllers
 
         public async Task<IActionResult> UnassignedProjects()
         {
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            int companyId = User.Identity!.GetCompanyId();
             List<Project> unassignedProjects = await _projectService.GetUnassignedProjectsAsync(companyId);
             return View("Index", unassignedProjects);
         }
@@ -122,7 +124,7 @@ namespace NovaBugTracker.Controllers
             ModelState.AddModelError("PMId", "No Project Manager choosen! Please Select a PM!");
 
             //companyId
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            int companyId = User.Identity!.GetCompanyId();
 
             model.Project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
 
@@ -163,7 +165,7 @@ namespace NovaBugTracker.Controllers
             {
                 return NotFound();
             }
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            int companyId = User.Identity!.GetCompanyId();
 
             List<BTUser> submitters = await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId);
             List<BTUser> developers = await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
@@ -237,7 +239,7 @@ namespace NovaBugTracker.Controllers
 
             if (ModelState.IsValid)
             {
-                project.CompanyId = (await _userManager.GetUserAsync(User)).CompanyId;
+                int companyId = User.Identity!.GetCompanyId();
                 project.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
                 project.StartDate = DateTime.SpecifyKind(project.StartDate, DateTimeKind.Utc);
                 project.EndDate = DateTime.SpecifyKind(project.EndDate, DateTimeKind.Utc);
@@ -294,7 +296,7 @@ namespace NovaBugTracker.Controllers
             {
                 try
                 {
-                    project.CompanyId = (await _userManager.GetUserAsync(User)).CompanyId;
+                    int companyId = User.Identity!.GetCompanyId();
 
                     if (project.ImageFormFile != null)
                     {
