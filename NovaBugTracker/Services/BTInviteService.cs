@@ -67,7 +67,7 @@ namespace NovaBugTracker.Services
         {
             try
             {
-                bool result = await _context.Invites.Where(i => i.CompanyId == companyId)
+                bool result = await _context.Invites!.Where(i => i.CompanyId == companyId)
                                                     .AnyAsync(i => i.CompanyToken == token && i.InviteeEmail == email);
                 return result;
             }

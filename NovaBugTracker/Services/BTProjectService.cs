@@ -232,15 +232,26 @@ namespace NovaBugTracker.Services
 
         public async Task<List<BTUser>> GetProjectMembersByRoleAsync(int projectId, string roleName)
         {
-            List<BTUser> membersInRole = new List<BTUser>();
-            Project project = await GetProjectByIdAsync(projectId);
 
-            foreach (BTUser member in project.Members)
+            try
             {
-                if (await _userManager.IsInRoleAsync(member, roleName)) membersInRole.Add(member);
-            }
+                Project? project = await _context.Projects!.Include(p => p.Members)
+                                                         .FirstOrDefaultAsync(p => p.Id == projectId);
+                List<BTUser> members = new();
+                foreach (BTUser btUser in project!.Members)
+                {
+                    if (await _userManager.IsInRoleAsync(btUser, roleName))
+                    {
+                        members.Add(btUser);
+                    }
+                }
 
-            return membersInRole;
+                return members;
+
+            }
+            catch (Exception)
+            { throw; }
+
         }
 
         public async Task<List<Project>> GetUnassignedProjectsAsync(int companyId)

@@ -26,13 +26,17 @@ namespace NovaBugTracker.Controllers
         private readonly IBTRolesService _rolesService;
         private readonly IBTProjectService _projectService;
         private readonly IBTFileService _fileService;
+        private readonly IBTTicketHistoryService _ticketHistoryService;
+        private readonly IBTNotificationService _notificationService;
 
         public TicketsController(ApplicationDbContext context,
                                  UserManager<BTUser> userManager,
                                  IBTTicketService ticketService,
                                  IBTRolesService rolesService,
                                  IBTProjectService projectService,
-                                 IBTFileService fileService)
+                                 IBTFileService fileService,
+                                 IBTTicketHistoryService ticketHistoryService,
+                                 IBTNotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
@@ -40,6 +44,8 @@ namespace NovaBugTracker.Controllers
             _rolesService = rolesService;
             _projectService = projectService;
             _fileService = fileService;
+            _ticketHistoryService = ticketHistoryService;
+            _notificationService = notificationService;
         }
 
         // GET: Tickets
@@ -140,9 +146,16 @@ namespace NovaBugTracker.Controllers
             Ticket ticket = await _ticketService.GetTicketByIdAsync(id);
 
             int companyId = User.Identity!.GetCompanyId();
-            List<BTUser> developers = await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+            string userId = _userManager.GetUserId(User);
+
+            List<BTUser> developers = await _projectService.GetProjectMembersByRoleAsync(ticket.ProjectId, nameof(BTRoles.Developer));
+
+            //List<BTUser> developers = await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+
 
             ViewData["DeveloperIds"] = new SelectList(developers, "Id", "FullName");
+
+
             return View(ticket);
         }
 
@@ -151,6 +164,9 @@ namespace NovaBugTracker.Controllers
         public async Task<IActionResult> AssignTicket(int TicketId, string DeveloperId)
         {
             Ticket ticket = await _ticketService.GetTicketByIdAsync(TicketId);
+            int companyId = User.Identity!.GetCompanyId();
+            string userId = _userManager.GetUserId(User);
+            Ticket? oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id, companyId);
 
             if (DeveloperId == "unassigned")
             {
@@ -164,9 +180,32 @@ namespace NovaBugTracker.Controllers
 
                 await _ticketService.AssignDeveloperAsync(TicketId, DeveloperId);
             }
+            //add history
+            Ticket? newTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id, companyId);
+            await _ticketHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
+
+            //Notificattion
+
+            BTUser btUser = await _userManager.GetUserAsync(User);
+
+            Notification notification = new()
+            {
+                NotificationTypeId = (await _context.NotificationTypes!.FirstOrDefaultAsync(n => n.Name == nameof(BTNotificationType.Ticket)))!.Id,
+                TicketId = ticket.Id,
+                Title = "New Ticket Added",
+                Message = $"New Ticket: {ticket.Title} was created by {btUser.FullName}",
+                Created = DataUtility.GetPostgresDate(DateTime.UtcNow),
+                SenderId = userId,
+                RecipientId = DeveloperId
+            };
+            await _notificationService.AddNotificationAsync(notification);
+            await _notificationService.SendEmailNotificationAsync(notification, "Ticket Assigned");
+
 
             return RedirectToAction("Details", new { id = TicketId });
         }
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -207,6 +246,7 @@ namespace NovaBugTracker.Controllers
                 ticketComment.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
                 _context.Add(ticketComment);
                 await _context.SaveChangesAsync();
+                await _ticketHistoryService.AddHistoryAsync(ticketComment.TicketId, nameof(TicketComment), (ticketComment.UserId));
                 return RedirectToAction("Details", "Tickets", new { id = ticketComment.TicketId });
             }
             return View(Details);
@@ -240,6 +280,8 @@ namespace NovaBugTracker.Controllers
                 .Include(t => t.TicketPriority)
                 .Include(t => t.TicketStatus)
                 .Include(t => t.TicketType)
+                .Include(t => t.Comments)
+                .Include(t => t.Attatchment)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ticket == null)
             {
@@ -249,7 +291,8 @@ namespace NovaBugTracker.Controllers
             return View(ticket);
         }
 
-        
+       
+
 
         // GET: Tickets/Create
         public IActionResult Create()
@@ -273,9 +316,41 @@ namespace NovaBugTracker.Controllers
                 ticket.Created = DateTime.Now;
                 ticket.SubmitterUserId = _userManager.GetUserId(User);
                 ticket.TicketStatus = await _context.TicketStatuses!.FirstOrDefaultAsync(ts => ts.Name == nameof(BTTicketStatuses.New));
-
                 _context.Add(ticket);
                 await _context.SaveChangesAsync();
+
+                int companyId = User.Identity!.GetCompanyId();
+                string userId = _userManager.GetUserId(User);
+                //add ticket history
+                Ticket newTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id, companyId);
+                await _ticketHistoryService.AddHistoryAsync(null!, newTicket, userId);
+
+                //add ticket notfication
+                BTUser btUser = await _userManager.GetUserAsync(User);
+                BTUser? projectManager = await _projectService.GetProjectManagerAsync(ticket.ProjectId)!;
+                Notification notification = new()
+                {
+                    NotificationTypeId = (await _context.NotificationTypes!.FirstOrDefaultAsync(n => n.Name == nameof(BTNotificationType.Ticket)))!.Id,
+                    TicketId = ticket.Id,
+                    Title = "New Ticket Added",
+                    Message = $"New Ticket: {ticket.Title} was created by {btUser.FullName}",
+                    Created = DataUtility.GetPostgresDate(DateTime.UtcNow),
+                    SenderId = userId,
+                    RecipientId = projectManager?.Id
+                };
+
+
+                await _notificationService.AddNotificationAsync(notification);
+                if (projectManager != null)
+                {
+                    await _notificationService.SendEmailNotificationAsync(notification, $"New Ticket Added To Project: {ticket.Project!.Name}");
+                }
+                else
+                {
+                    notification.RecipientId = userId;
+                    await _notificationService.SendEmailNotificationAsync(notification, $"New Ticket Added To Project: {ticket.Project!.Name}");
+
+                }
                 return RedirectToAction(nameof(Index));
             }
 
@@ -323,36 +398,17 @@ namespace NovaBugTracker.Controllers
 
             if (ModelState.IsValid)
             {
+
+                int companyId = User.Identity!.GetCompanyId();
+                string userId = _userManager.GetUserId(User);
+                Ticket? oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id, companyId);
+
                 try
                 {
-                    ticket.Updated = DateTime.Now;
+                    ticket.Created = DataUtility.GetPostgresDate(ticket.Created);
+                    ticket.Updated = DataUtility.GetPostgresDate(DateTime.Now);
 
-                    Ticket? oldRecord = await _context.Tickets!.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
-                    string[] propsToSkip = { "Id", "Created", "Updated", "ProjectId", "History", "Attachments", "Comments", "Archived", "ArchivedByProject" };
-
-                    foreach (PropertyInfo property in ticket.GetType().GetProperties())
-                    {
-                        if (propsToSkip.Contains(property.Name)) continue;
-
-                        bool isChanged = property.PropertyType == typeof(string) ?
-                                            !string.Equals(property.GetValue(ticket), property.GetValue(oldRecord))
-                                            : property.GetValue(ticket) != property.GetValue(oldRecord);
-
-                        if (isChanged)
-                        {
-                            TicketHistory newChange = new()
-                            {
-                                TicketId = ticket.Id,
-                                PropertyName = property.Name,
-                                Created = DateTime.Now,
-                                OldValue = property.GetValue(oldRecord)!.ToString(),
-                                NewValue = property.GetValue(ticket)!.ToString(),
-                                UserId = _userManager.GetUserId(User)
-                            };
-
-                            ticket.History.Add(newChange);
-                        }
-                    }
+                   
 
                     _context.Update(ticket);
                     await _context.SaveChangesAsync();
@@ -368,6 +424,14 @@ namespace NovaBugTracker.Controllers
                         throw;
                     }
                 }
+
+
+                //add history
+                Ticket newTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id, companyId);
+                await _ticketHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
+
+                //add notification
+
                 return RedirectToAction(nameof(Index));
             }
             ViewData["DeveloperUserId"] = new SelectList(_context.Set<BTUser>(), "Id", "FullName", ticket.DeveloperUserId);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NovaBugTracker.Models;
+using NovaBugTracker.Models.ViewModels;
 using System.Diagnostics;
 
 namespace NovaBugTracker.Controllers
@@ -16,6 +17,12 @@ namespace NovaBugTracker.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        //Get Dashboard
+        public async Task<IActionResult> Dashboard(DashboardViewModel model)
+        {
+            return View(model);
         }
 
         public IActionResult Privacy()

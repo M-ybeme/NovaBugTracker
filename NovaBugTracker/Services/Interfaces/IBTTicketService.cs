@@ -13,7 +13,7 @@ namespace NovaBugTracker.Services.Interfaces
         public Task AssignDeveloperAsync(int ticketId, string userId);
         public Task<List<Ticket>> GetArchivedTicketsAsync(int companyId);
         public Task<TicketAttatchment> GetTicketAttachmentByIdAsync(int ticketAttachmentId);
-        public Task<Ticket> GetTicketAsNoTrackingAsync(int ticketId);
+        public Task<Ticket> GetTicketAsNoTrackingAsync(int ticketId, int companyId);
         public Task<List<Ticket>> GetAllTicketsByCompanyIdAsync(int companyId);
         public Task<Ticket> GetTicketByIdAsync(int ticketId);
         public Task<List<Ticket>> GetTicketsByUserIdAsync(string userId, int companyId);

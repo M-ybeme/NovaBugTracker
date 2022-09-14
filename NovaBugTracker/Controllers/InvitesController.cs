@@ -12,11 +12,13 @@ using Microsoft.EntityFrameworkCore;
 using NovaBugTracker.Data;
 using NovaBugTracker.Extensions;
 using NovaBugTracker.Models;
+using NovaBugTracker.Models.Enums;
 using NovaBugTracker.Services;
 using NovaBugTracker.Services.Interfaces;
 
 namespace NovaBugTracker.Controllers
 {
+    [Authorize(Roles = $"{nameof(BTRoles.Admin)},{nameof(BTRoles.ProjectManager)}")]
     public class InvitesController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -2,6 +2,7 @@
 using NovaBugTracker.Data;
 using NovaBugTracker.Models;
 using NovaBugTracker.Services.Interfaces;
+using System.Net.Mail;
 
 namespace NovaBugTracker.Services
 {
@@ -113,25 +114,28 @@ namespace NovaBugTracker.Services
             catch { throw; }
         }
 
-        public async Task<Ticket> GetTicketAsNoTrackingAsync(int ticketId)
+        public async Task<Ticket> GetTicketAsNoTrackingAsync(int ticketId, int companyId)
         {
             try
             {
-                Ticket? ticket = await _context.Tickets!
-                    .AsNoTracking()
-                    .Where(t => t.Id == ticketId)
-                    .Include(t => t.Project)
-                    .Include(t => t.TicketPriority)
-                    .Include(t => t.TicketType)
-                    .Include(t => t.TicketStatus)
-                    .Include(t => t.DeveloperUser)
-                    .Include(t => t.SubmitterUser)
-                    .Include(t => t.Comments).ThenInclude(c => c.User)
-                    .Include(t => t.Attatchment).ThenInclude(a => a.User)
-                    .Include(t => t.History).ThenInclude(h => h.User)
-                    .FirstOrDefaultAsync();
-
+                Ticket? ticket = new();
+                ticket = await _context.Projects!
+                                       .Where(p => p.CompanyId == companyId && !p.Archived)
+                                       .SelectMany(p => p.Tickets)
+                                         .Include(t => t.Attatchment)
+                                         .Include(t => t.Comments)
+                                         .Include(t => t.History)
+                                         .Include(t => t.DeveloperUser)
+                                         .Include(t => t.SubmitterUser)
+                                         .Include(t => t.TicketPriority)
+                                         .Include(t => t.TicketStatus)
+                                         .Include(t => t.TicketType)
+                                         .Include(t => t.Project)
+                                         .Where(t => !t.Archived && !t.ArchivedByProject)
+                                        .AsNoTracking()
+                                        .FirstOrDefaultAsync(t => t.Id == ticketId);
                 return ticket!;
+                                       
             }
             catch { throw; }
         }
