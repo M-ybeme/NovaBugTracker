@@ -11,6 +11,7 @@ namespace NovaBugTracker.Services.Interfaces
         public Task ArchiveProjectAsync(int projectId);
         public Task<List<Project>> GetArchivedProjectsAsync(int companyId);
         public Task<List<BTUser>> GetProjectMembersByRoleAsync(int projectId, string roleName);
+        public Task<List<Project>> GetAllProjectsByPriorityAsync(int companyId ,string priorityName);
         public Task<List<BTUser>> GetAllProjectMembersExceptPMAsync(int projectId);
         public Task<List<BTUser>> GetUsersNotOnProjectAsync(int projectId, int companyId);
         public Task<List<Project>> GetAllProjectsByCompanyIdAsync(int companyId);

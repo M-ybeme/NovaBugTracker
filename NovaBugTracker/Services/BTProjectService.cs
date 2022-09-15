@@ -165,6 +165,24 @@ namespace NovaBugTracker.Services
             catch { throw; }
         }
 
+        public async Task<List<Project>> GetAllProjectsByPriorityAsync(int companyId, string priorityName)
+        {
+            return await _context.Projects!
+                   .Where(p => p.CompanyId == companyId && !p.Archived && p.ProjectPriority!.Name == priorityName)
+                   .Include(p => p.Tickets).ThenInclude(t => t.TicketPriority)
+                   .Include(p => p.Tickets).ThenInclude(t => t.TicketType)
+                   .Include(p => p.Tickets).ThenInclude(t => t.TicketStatus)
+                   .Include(p => p.Tickets).ThenInclude(t => t.DeveloperUser)
+                   .Include(p => p.Tickets).ThenInclude(t => t.SubmitterUser)
+                   .Include(p => p.Tickets).ThenInclude(t => t.Attatchment)
+                   .Include(p => p.Tickets).ThenInclude(t => t.Comments)
+                   .Include(p => p.Tickets).ThenInclude(t => t.History)
+                   .Include(p => p.Company)
+                   .Include(p => p.ProjectPriority)
+                   .Include(p => p.Members)
+                   .ToListAsync();
+        }
+
         public async Task<List<Project>> GetArchivedProjectsAsync(int companyId)
         {
             try
