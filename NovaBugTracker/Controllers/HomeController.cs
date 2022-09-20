@@ -21,13 +21,15 @@ namespace NovaBugTracker.Controllers
         private readonly IBTCompanyService _companyService;
         private readonly IBTTicketService _ticketService;
         private readonly ApplicationDbContext _context;
+        private readonly SignInManager<BTUser> _signInManager;
 
         public HomeController(ILogger<HomeController> logger,
                               UserManager<BTUser> userManager,
                               IBTProjectService projectService,
                               IBTCompanyService companyService,
                               IBTTicketService ticketService,
-                              ApplicationDbContext context)
+                              ApplicationDbContext context,
+                              SignInManager<BTUser> signInManager)
         {
             _logger = logger;
             _userManager = userManager;
@@ -35,11 +37,13 @@ namespace NovaBugTracker.Controllers
             _companyService = companyService;
             _ticketService = ticketService;
             _context = context;
+            _signInManager = signInManager;
         }
 
         public IActionResult Index()
         {
-            return View();
+            if (_signInManager.IsSignedIn(User)) return RedirectToAction(nameof(Dashboard));
+            else return View();
         }
 
         //Get Dashboard
@@ -57,6 +61,42 @@ namespace NovaBugTracker.Controllers
 
 
             return View(model);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> PlotlyBarChart()
+        {
+            PlotlyBarData plotlyData = new();
+            List<PlotlyBar> barData = new();
+
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            List<Project> projects = await _projectService.GetAllProjectsByCompanyIdAsync(companyId);
+
+            //Bar One
+            PlotlyBar barOne = new()
+            {
+                X = projects.Select(p => p.Name).ToArray(),
+                Y = projects.SelectMany(p => p.Tickets).GroupBy(t => t.ProjectId).Select(g => g.Count()).ToArray(),
+                Name = "Tickets",
+                Type = "bar"
+            };
+
+            //Bar Two
+            PlotlyBar barTwo = new()
+            {
+                X = projects.Select(p => p.Name).ToArray(),
+                Y = projects.Select(async p => (await _projectService.GetProjectMembersByRoleAsync(p.Id, nameof(BTRoles.Developer))).Count).Select(c => c.Result).ToArray(),
+                Name = "Developers",
+                Type = "bar"
+            };
+
+            barData.Add(barOne);
+            barData.Add(barTwo);
+
+            plotlyData.Data = barData;
+
+            return Json(plotlyData);
         }
 
         [HttpPost]

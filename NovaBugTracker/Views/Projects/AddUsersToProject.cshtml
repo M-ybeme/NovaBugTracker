@@ -3,21 +3,38 @@
 @{
 	ViewData["Title"] = "Assign Users Project";
 }
-<h3>@Model.Name</h3>
-<p>@Model.Description</p>
-<hr />
-<form asp-action="AddUsersToProject">
-	<input type="hidden" asp-for="@Model.Id" />
 
+<div class="container-fluid">
 	<div class="row">
-		<div class="col-6">
-			<h5>Developers</h5>
-			<select multiple name="developers" asp-items="@ViewBag.Developers"></select>
-		</div>
-		<div class="col-6">
-			<h5>Submitters</h5>
-			<select multiple name="submitters" asp-items="@ViewBag.Submitters"></select>
+		<div class="col-sm-12">
+			<div class="card">
+				<div class="card-header pb-0">
+					<h3>@Model.Name</h3>
+					<p>@Model.Description</p>
+					<hr />
+				</div>
+				<div class="container">
+					<div class="row">
+						<div class="col-sm-12">
+							<h3>Add or Remove Team Members</h3>
+							<form asp-action="AddUsersToProject">
+								<input type="hidden" asp-for="@Model.Id" />
+								<div class="row justify-content-center">
+									<div class="col-6">
+										<h5>Developers</h5>
+										<select multiple style="width:300px; height:300px" name="developers" asp-items="@ViewBag.Developers"></select>
+									</div>
+									<div class="col-6">
+										<h5>Submitters</h5>
+										<select multiple style="width:300px; height:300px" name="submitters" asp-items="@ViewBag.Submitters"></select>
+									</div>
+								</div>
+								<input type="submit" value="Save" class="btn btn-primary" />
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
-	<input type="submit" />
-</form>
+</div>

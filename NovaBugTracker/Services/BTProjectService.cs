@@ -287,8 +287,37 @@ namespace NovaBugTracker.Services
 
         public async Task<List<Project>> GetUserProjectsAsync(string userId)
         {
-            BTUser user = await _userManager.FindByIdAsync(userId);
-            return await _context.Projects!.Where(p => p.Members.Contains(user)).ToListAsync();
+            try
+            {
+                List<Project>? projects = (await _context.Users
+                                                         .Include(u => u.Projects)!
+                                                            .ThenInclude(p => p.Company)
+                                                         .Include(u => u.Projects)!
+                                                            .ThenInclude(p => p.Members)
+                                                         .Include(u => u.Projects)!
+                                                            .ThenInclude(p => p.Tickets)
+                                                         .Include(u => u.Projects)!
+                                                            .ThenInclude(t => t.Tickets)
+                                                                .ThenInclude(t => t.DeveloperUser)
+                                                         .Include(u => u.Projects)!
+                                                             .ThenInclude(t => t.Tickets)
+                                                                 .ThenInclude(t => t.SubmitterUser)
+                                                         .Include(u => u.Projects)!
+                                                             .ThenInclude(t => t.Tickets)
+                                                                 .ThenInclude(t => t.TicketPriority)
+                                                         .Include(u => u.Projects)!
+                                                             .ThenInclude(t => t.Tickets)
+                                                                 .ThenInclude(t => t.TicketStatus)
+                                                         .Include(u => u.Projects)!
+                                                             .ThenInclude(t => t.Tickets)
+                                                                 .ThenInclude(t => t.TicketType)
+                                                         .FirstOrDefaultAsync(u => u.Id == userId))?.Projects!.ToList();
+                return projects!;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<List<BTUser>> GetUsersNotOnProjectAsync(int projectId, int companyId)

@@ -16,3 +16,8 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.dropdown-item.active, .dropdown-item:active {
+    color: #fff !important;
+}
+

@@ -47,6 +47,7 @@ namespace NovaBugTracker.Controllers
             return View(projects);
         }
 
+        [Authorize(Roles = nameof(BTRoles.Admin))]
 
         public async Task<IActionResult> ArchivedProjects()
         {
@@ -78,6 +79,7 @@ namespace NovaBugTracker.Controllers
             return View("Index", allProjects);
         }
 
+        [Authorize(Roles = nameof(BTRoles.Admin))]
         public async Task<IActionResult> UnassignedProjects()
         {
             int companyId = User.Identity!.GetCompanyId();
@@ -140,6 +142,7 @@ namespace NovaBugTracker.Controllers
 
 
         // GET: Projects/Details/5
+        [Authorize(Roles = $"{nameof(BTRoles.Admin)},{nameof(BTRoles.ProjectManager)}")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Projects == null)
@@ -239,18 +242,25 @@ namespace NovaBugTracker.Controllers
 
             if (ModelState.IsValid)
             {
+                //comapny ID
                 int companyId = User.Identity!.GetCompanyId();
+                //Date(s)
                 project.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
                 project.StartDate = DateTime.SpecifyKind(project.StartDate, DateTimeKind.Utc);
                 project.EndDate = DateTime.SpecifyKind(project.EndDate, DateTimeKind.Utc);
-
+                //Image
                 if (project.ImageFormFile != null)
                 {
                     project.ImageFileData = await _fileService.ConvertFileToByteArrayAsync(project.ImageFormFile);
                     project.ImageFileType = project.ImageFormFile.ContentType;
                 }
 
-                await _projectService.AddProjectAsync(project);
+                //service call
+                if (!User.IsInRole(nameof(BTRoles.DemoUser)))
+                {
+                    await _projectService.AddProjectAsync(project);
+                }
+
                 return RedirectToAction(nameof(Index));
             }
 

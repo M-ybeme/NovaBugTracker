@@ -18,7 +18,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using NovaBugTracker.Data;
 using NovaBugTracker.Models;
+using NovaBugTracker.Models.Enums;
 
 namespace NovaBugTracker.Areas.Identity.Pages.Account
 {
@@ -30,13 +32,15 @@ namespace NovaBugTracker.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<BTUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly ApplicationDbContext _context;
 
         public RegisterModel(
             UserManager<BTUser> userManager,
             IUserStore<BTUser> userStore,
             SignInManager<BTUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -44,6 +48,7 @@ namespace NovaBugTracker.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _context = context;
         }
 
         /// <summary>
@@ -81,6 +86,34 @@ namespace NovaBugTracker.Areas.Identity.Pages.Account
             public string Email { get; set; }
 
             /// <summary>
+            /// First Name
+            /// </summary>
+            [Required]
+            [Display(Name = "First Name")]
+            public string Firstname { get; set; }
+
+            /// <summary>
+            /// Last Name
+            /// </summary>
+            [Required]
+            [Display(Name = "Last Name")]
+            public string Lastname { get; set; }
+
+            /// <summary>
+            /// Company Name
+            /// </summary>
+            [Required]
+            [Display(Name = "Company Name")]
+            public string CompanyName { get; set; }
+
+            /// <summary>
+            /// Company Discription
+            /// </summary>
+            [Display(Name ="Company Description")]
+            public string CompanyDescription { get; set; }
+
+
+            /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
@@ -113,7 +146,19 @@ namespace NovaBugTracker.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = CreateUser();
+
+
+                //Create new Company
+                Company company = new()
+                {
+                    CompanyName = Input.CompanyName,
+                    Description = Input.CompanyDescription,
+                };
+                await _context.AddAsync(company);
+                await _context.SaveChangesAsync();
+
+                //Create new User
+                var user = CreateUser(company.Id);
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
@@ -122,6 +167,8 @@ namespace NovaBugTracker.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+
+                    await _userManager.AddToRoleAsync(user, nameof(BTRoles.Admin));
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -155,11 +202,16 @@ namespace NovaBugTracker.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private BTUser CreateUser()
+        private BTUser CreateUser(int companyId)
         {
             try
             {
-                return Activator.CreateInstance<BTUser>();
+                BTUser btUser = Activator.CreateInstance<BTUser>();
+                btUser.FirstName = Input.Firstname;
+                btUser.LastName = Input.Lastname;
+                btUser.CompanyId = companyId;
+
+                return btUser;
             }
             catch
             {
