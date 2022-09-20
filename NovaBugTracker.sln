@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32819.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NovaBugTracker", "NovaBugTracker\NovaBugTracker.csproj", "{443C201C-4BD1-478A-B802-A034813924CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NovaBugTracker", "NovaBugTracker.csproj", "{37FC818F-5E4B-412C-B244-C4A6EFF6FA4B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{443C201C-4BD1-478A-B802-A034813924CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{443C201C-4BD1-478A-B802-A034813924CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{443C201C-4BD1-478A-B802-A034813924CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{443C201C-4BD1-478A-B802-A034813924CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37FC818F-5E4B-412C-B244-C4A6EFF6FA4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37FC818F-5E4B-412C-B244-C4A6EFF6FA4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37FC818F-5E4B-412C-B244-C4A6EFF6FA4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37FC818F-5E4B-412C-B244-C4A6EFF6FA4B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
