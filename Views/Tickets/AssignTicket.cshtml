@@ -1,8 +1,32 @@
 ﻿@model Ticket
 
+
 @{
 }
-<div>
+
+<div class="row justify-content-center">
+    <div class=" col-6 card text-center">
+        <div class="justify-content-center text-center">
+            <h4>Ticket #@Model.Id</h4>
+            <p><ins>@Model.Title</ins></p>
+            <p>Assign Developer</p>
+            <form asp-action="AssignTicket">
+                <input type="hidden" name="ticketId" value="@Model.Id" />
+
+                <div class="form-group">
+                    <label for="DeveloperId" class="control-label">Assign To Developer</label>
+                    <select name="DeveloperId" asp-items="ViewBag.DeveloperIds" class="form-control">
+                        <option value="unassigned">Unassigned</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Assign</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@*<div>
     <h4>Ticket #@Model.Id</h4>
     <hr />
     <dl class="row">
@@ -79,4 +103,4 @@
         </div>
         <button type="submit" class="btn btn-primary">Assign</button>
     </form>
-</div>
+</div>*@
