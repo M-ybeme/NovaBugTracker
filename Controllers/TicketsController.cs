@@ -66,6 +66,7 @@ namespace NovaBugTracker.Controllers
             return View(tickets);
         }
 
+        [Authorize(Roles = $"{nameof(BTRoles.Admin)}, {nameof(BTRoles.ProjectManager)}")]
         public async Task<IActionResult> ArchivedTickets()
         {
             List<Ticket> tickets = await _context.Tickets!
@@ -83,34 +84,10 @@ namespace NovaBugTracker.Controllers
 
         public async Task<IActionResult> MyTickets()
         {
-            string userId = _userManager.GetUserId(User);
+            var companyId = User.Identity!.GetCompanyId();
+            var user = _userManager.GetUserId(User);
 
-            List<Ticket> tickets = new();
-            if (User.IsInRole(nameof(BTRoles.ProjectManager)))
-            {
-                BTUser user = await _userManager.GetUserAsync(User);
-                tickets = await _context.Tickets!
-                    .Where(t => t.Project!.Members.Contains(user))
-                    .Include(t => t.DeveloperUser)
-                    .Include(t => t.Project)
-                    .Include(t => t.SubmitterUser)
-                    .Include(t => t.TicketPriority)
-                    .Include(t => t.TicketStatus)
-                    .Include(t => t.TicketType)
-                    .ToListAsync();
-            }
-            else
-            {
-                tickets = await _context.Tickets!
-                    .Where(t => (t.SubmitterUserId == userId || t.DeveloperUserId == userId) && !t.Archived)
-                    .Include(t => t.DeveloperUser)
-                    .Include(t => t.Project)
-                    .Include(t => t.SubmitterUser)
-                    .Include(t => t.TicketPriority)
-                    .Include(t => t.TicketStatus)
-                    .Include(t => t.TicketType)
-                    .ToListAsync();
-            }
+            List<Ticket> tickets = await _ticketService.GetTicketsByUserIdAsync(user, companyId);
 
             return View("Index", tickets);
         }
@@ -291,13 +268,13 @@ namespace NovaBugTracker.Controllers
             return View(ticket);
         }
 
-       
 
 
+        [Authorize(Roles = $"{nameof(BTRoles.Admin)},{nameof(BTRoles.ProjectManager)}")]
         // GET: Tickets/Create
         public IActionResult Create()
         {
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Description");
+            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Name");
             ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Name");
             ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name");
 
@@ -444,6 +421,7 @@ namespace NovaBugTracker.Controllers
         }
 
         // GET: Tickets/Archive/5
+        [Authorize(Roles = $"{nameof(BTRoles.Admin)},{nameof(BTRoles.ProjectManager)}")]
         public async Task<IActionResult> Archive(int? id)
         {
             if (id == null || _context.Tickets == null)

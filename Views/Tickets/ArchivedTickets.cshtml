@@ -4,7 +4,103 @@
     ViewData["Title"] = "Archived Tickets";
 }
 
-<h1>Archived Tickets</h1>
+
+
+<div class="container-fluid">
+    <div class="page-header">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>Tickets list</h3>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Container-fluid starts-->
+<div class="container-fluid">
+    <div class="row project-cards">
+        <div class="col-md-12 project-list">
+            <div class="card">
+                <div class="row">
+                    <div class="col-md-12 p-0">
+                        <div class="form-group mb-0 me-0"></div><a class="btn btn-primary" asp-action="Create"> <i data-feather="plus-square"> </i>Create New Ticket</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="tab-content" id="top-tabContent">
+                        <div class="tab-pane fade show active" id="top-home" role="tabpanel" aria-labelledby="top-home-tab">
+                            <div class="row">
+                                @foreach (Ticket ticket in Model)
+                                {
+                                    <div class="col-xxl-4 col-lg-6">
+                                        <div class="project-box">
+                                            <h6>@ticket.Title</h6>
+                                            <p>@ticket.Description</p>
+                                            <div class="row details">
+                                                <div class="col-6"> <span>Created</span></div>
+                                                <div class="col-6 font-primary">@ticket.Created</div>
+                                                <div class="col-6"> <span>Deliver By</span></div>
+                                                <div class="col-6 font-primary">@ticket.Project!.EndDate</div>
+                                                <div class="col-6"> <span>Developer</span></div>
+                                                @if (ticket.DeveloperUser != null)
+                                                {
+                                                    <div class="col-6 font-primary">@ticket.DeveloperUser!.FullName</div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="col-3">
+                                                        <a asp-controller="Tickets" asp-action="AssignTicket" class="btn btn-outline-secondary"><i data-feather="plus"></i></a>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="customers">
+                                            </div>
+                                            @{
+                                                var start = ticket.Created;
+                                                var end = ticket.Project.EndDate;
+                                                var today = DateTime.Now;
+                                                var percent = today >= end ? 100 : today < start ? 0 : Math.Round((today.Subtract(start)) / (end.Subtract(start)) * 100);
+                                            }
+                                            <div class="project-status mt-4">
+                                                <div class="media mb-0">
+                                                    <p>@percent % </p>
+                                                    <div class="media-body text-end"><span>Done</span></div>
+                                                </div>
+                                                <div class="progress" style="height: 5px">
+                                                    <div class="progress-bar-animated bg-primary progress-bar-striped" role="progressbar" style="width: @percent%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </div>
+                                            <br />
+                                            <a asp-action="Edit" asp-route-id="@ticket.Id" class="btn btn-outline-primary btn-sm"><i data-feather="edit"></i></a>
+                                            <a asp-action="Details" asp-route-id="@ticket.Id" class="btn btn-outline-secondary btn-sm"><i data-feather="list"></i></a>
+                                            @if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+                                            {
+                                                @if (ticket.Archived)
+                                                {
+                                                    <a asp-action="Restore" asp-route-id="@ticket.Id" class="btn btn-outline-success btn-sm"><i data-feather="archive"></i></a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-action="Archive" asp-route-id="@ticket.Id" class="btn btn-outline-danger btn-sm"><i data-feather="trash-2"></i></a>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*<h1>Archived Tickets</h1>
 
 <table class="table">
     <thead>
@@ -102,4 +198,4 @@
         </tr>
 }
     </tbody>
-</table>
+</table>*@

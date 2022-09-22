@@ -9,71 +9,134 @@
 
 
 
-<div class="row">
-    <h2 class="m-t-0 h3"><b>Manage Member Roles </b></h2>
-    @foreach (var member in Model)
-    {
-
-        @if(_userManager.GetUserId(User) == member?.BTUser?.Id){
-            <div class="row">
-                <div class="card col-4 m-3">
-                    <div class="card-body">
-                        <p class="text-muted font-13 m-b-30">
-                            This form displays the current roles assigned to the user: <strong class="text-info">@member.BTUser.FullName</strong>.
-                            Use the dropdown to select the roles this user should be assigned.
-                            Once roles are selected, click "Assign Roles" to submit the form.
-                        </p>
-                        <hr />
-                        <form asp-action="ManageUserRoles" asp-controller="Companies" method=post>
-                            <input type="hidden" asp-for="@member.BTUser.Id" />
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label asp-for="@member.Roles" class="custom-label"> Roles for @member.BTUser.FullName </label>
-                                        <select asp-for="@member.SelectedRoles" class="form-control" asp-items="@member.Roles" disabled>
-                                        </select>
-                                        <hr />
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="submit" value="Assign Role" class="btn btn-info" disabled/>
-                                    </div>
-                                </div>
+@*<div class="container-fluid user-card">
+    <div class="row">
+        @foreach( var member in Model)
+            {
+                @if(_userManager.GetUserId(User) == member.BTUser!.Id)
+                {
+                <div class="col-md-6 col-lg-6 col-xl-4 box-col-6">
+                    <div class="card custom-card">
+                        <div class="card-header"><img class="img-fluid" src="~/Img/Collaboration-amico.png" alt=""></div>
+                        <div class="card-profile"><i data-feather="user"></i></div>
+                        <div class="text-center profile-details">
+                            <a href="user-profile.html">
+                                <h4>@member.BTUser.FullName</h4>
+                            </a>
+                            <h6>@member.Roles</h6>
+                        </div>
+                        <div class="card-footer row">
+                            <div class="col-4 col-sm-4">
+                                <h6>Follower</h6>
+                                <h3 class="counter">9564</h3>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
-        <div class="row">
-            <div class="card col-4 m-3">
-                <div class="card-body">
-                    <p class="text-muted font-13 m-b-30">
-                        This form displays the current roles assigned to the user: <strong class="text-info">@member.BTUser.FullName</strong>.
-                        Use the dropdown to select the roles this user should be assigned.
-                        Once roles are selected, click "Assign Roles" to submit the form.
-                    </p>
-                    <hr />
-                    <form asp-action="ManageUserRoles" asp-controller="Companies" method=post>
-                        <input type="hidden" asp-for="@member.BTUser.Id" />
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label asp-for="@member.Roles" class="custom-label"> Roles for @member.BTUser.FullName </label>
-                                    <select asp-for="@member.SelectedRoles" class="form-control" asp-items="@member.Roles">
-                                    </select>
-                                    <hr />
-                                </div>
-                                <div class="form-group">
-                                    <input type="submit" value="Assign Role" class="btn btn-info" />
-                                </div>
+                            <div class="col-4 col-sm-4">
+                                <h6>Following</h6>
+                                <h3><span class="counter">49</span>K</h3>
+                            </div>
+                            <div class="col-4 col-sm-4">
+                                <h6>Total Post</h6>
+                                <h3><span class="counter">96</span>M</h3>
                             </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+                }else{
+                    <div class="col-md-6 col-lg-6 col-xl-4 box-col-6">
+                    <div class="card custom-card">
+                        <div class="card-header"><img class="img-fluid" src="~/Img/Collaboration-amico.png" alt=""></div>
+                        <div class="card-profile"><i data-feather="user"></i></div>
+                        <div class="text-center profile-details">
+                            <a href="user-profile.html">
+                                <h4>Mark Jecno</h4>
+                            </a>
+                            <h6>Manager</h6>
+                        </div>
+                        <div class="card-footer row">
+                            <div class="col-4 col-sm-4">
+                                <h6>Follower</h6>
+                                <h3 class="counter">9564</h3>
+                            </div>
+                            <div class="col-4 col-sm-4">
+                                <h6>Following</h6>
+                                <h3><span class="counter">49</span>K</h3>
+                            </div>
+                            <div class="col-4 col-sm-4">
+                                <h6>Total Post</h6>
+                                <h3><span class="counter">96</span>M</h3>
+                            </div>
+                        </div>
+                    </div>
+            }
+    </div>
+</div>*@
+
+
+
+
+<div class="row">
+    <h2 class="m-t-0 h3"><b>Manage Member Roles</b></h2>
+    <div class="container-fluid user-card">
+        <div class="row">
+            @foreach (var member in Model)
+            {
+                @if (_userManager.GetUserId(User) == member?.BTUser?.Id)
+                {
+                    <div class="col-md-6 col-lg-6 col-xl-4 box-col-6">
+                        <div class="card custom-card">
+                            <div class="card-header"><img class="img-fluid mx-auto d-block" src="~/Img/Collaboration-amico.png" style="height:200px;width:200px" alt=""></div>
+                            <div class="card-profile"><i data-feather="user"></i></div>
+                            <div class="text-center profile-details">
+                                <h4>@member.BTUser.FullName</h4>
+                                <form asp-action="ManageUserRoles" asp-controller="Companies" method=post>
+                                    <input type="hidden" asp-for="@member.BTUser.Id" />
+                                    <div class="row justify-content-center">
+                                        <div class="col-6 text-center">
+                                            <div class="form-group">
+                                                <select asp-for="@member.SelectedRoles" class="form-control" asp-items="@member.Roles" disabled>
+                                                </select>
+                                                <hr />
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="submit" value="Assign Role" class="btn btn-primary" disabled />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-md-6 col-lg-6 col-xl-4 box-col-6">
+                        <div class="card custom-card">
+                            <div class="card-header"><img class="img-fluid mx-auto d-block" src="~/Img/Collaboration-amico.png" style="height:200px;width:200px" alt=""></div>
+                            <div class="card-profile"><i data-feather="user"></i></div>
+                            <div class="text-center profile-details">
+                                <h4>@member.BTUser.FullName</h4>
+                                <form asp-action="ManageUserRoles" asp-controller="Companies" method=post>
+                                    <input type="hidden" asp-for="@member.BTUser.Id" />
+                                    <div class="row justify-content-center">
+                                        <div class="col-6 text-center">
+                                            <div class="form-group">
+                                                <select asp-for="@member.SelectedRoles" class="form-control" asp-items="@member.Roles">
+                                                </select>
+                                                <hr />
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="submit" value="Assign Role" class="btn btn-primary" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+
         </div>
-        }
-    }
+    </div>
+
 </div>

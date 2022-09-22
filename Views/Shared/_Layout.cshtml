@@ -116,7 +116,10 @@
                                         @*<li><a class="dropdown-item" asp-area="" asp-controller="Projects" asp-action="Index">Index</a></li>*@
                                         <li><a class="dropdown-item" asp-area="" asp-controller="Projects" asp-action="MyProjects">My Projects</a></li>
                                         <li><a class="dropdown-item" asp-area="" asp-controller="Projects" asp-action="AllProjects">All Projects</a></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Projects" asp-action="ArchivedProjects">Archived Projects</a></li>
+                                        @if (User.IsInRole(nameof(BTRoles.Admin)))
+                                        {
+                                            <li><a class="dropdown-item" asp-area="" asp-controller="Projects" asp-action="ArchivedProjects">Archived Projects</a></li>
+                                        }
                                         <li><a class="dropdown-item" asp-area="" asp-controller="Projects" asp-action="UnassignedProjects">Unassigned Projects</a></li>
                                     </ul>
                                 </li>
@@ -124,7 +127,7 @@
                                     <a class="nav-link menu-title" href="javascript:void(0)"><i data-feather="layout"></i><span>Tickets</span></a>
                                     <ul class="nav-submenu menu-content">
                                         <li><a class="dropdown-item" asp-area="" asp-controller="Tickets" asp-action="Create">New ticket...</a></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Tickets" asp-action="Index">Index</a></li>
+                                        @*<li><a class="dropdown-item" asp-area="" asp-controller="Tickets" asp-action="Index">Index</a></li>*@
                                         <li><a class="dropdown-item" asp-area="" asp-controller="Tickets" asp-action="MyTickets">My Tickets</a></li>
                                         <li><a class="dropdown-item" asp-area="" asp-controller="Tickets" asp-action="AllTickets">All Tickets</a></li>
                                         <li><a class="dropdown-item" asp-area="" asp-controller="Tickets" asp-action="ArchivedTickets">Archived Tickets</a></li>

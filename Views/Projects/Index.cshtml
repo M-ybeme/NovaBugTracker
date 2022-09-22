@@ -78,11 +78,17 @@
                                                 }
                                                 @if(User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
                                                 {
-                                                    <a asp-action="Archive" asp-route-id="@project.Id" class="btn btn-outline-danger btn-sm"><i data-feather="trash-2"></i></a>
+                                                    @if(project.Archived)
+                                                    {
+                                                    <a asp-action="Restore" asp-route-id="@project.Id" class="btn btn-outline-success btn-sm"><i data-feather="archive"></i></a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a asp-action="Archive" asp-route-id="@project.Id" class="btn btn-outline-danger btn-sm"><i data-feather="trash-2"></i></a>
+                                                    }
                                                 }
                                             </div>
                                         </div>
-
                                     }
                                 </div>
                             </div>

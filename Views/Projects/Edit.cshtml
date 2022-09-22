@@ -10,7 +10,98 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <form asp-action="Edit" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="CompanyId" />
+                <input type="hidden" asp-for="Created" />            
+                <input type="hidden" asp-for="ImageFileName" />
+                <input type="hidden" asp-for="ImageFileType" />
+                <input type="hidden" asp-for="ImageFileData" />
+                <input type="hidden" asp-for="Archived" />
+                    <div class="card-body">
+                        <div class="form theme-form">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="mb-3">
+                                        <div class="form-group">
+                                            <label asp-for="Name" class="control-label"></label>
+                                            <input asp-for="Name" class="form-control" />
+                                            <span asp-validation-for="Name" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="mb-3">
+                                        <label asp-for="ProjectPriorityId" class="control-label"></label>
+                                        <select asp-for="ProjectPriorityId" class="form-control" asp-items="ViewBag.ProjectPriorityId"></select>
+                                        <span asp-validation-for="ProjectPriorityId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="mb-3">
+                                        <label asp-for="StartDate" class="control-label"></label>
+                                        <input asp-for="StartDate" class="form-control" />
+                                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="mb-3">
+                                        <label asp-for="EndDate" class="control-label"></label>
+                                        <input asp-for="EndDate" class="form-control" />
+                                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="mb-3">
+                                        <label asp-for="Description" class="control-label">Enter a description.</label>
+                                        <textarea class="form-control" asp-for="Description" rows="3"></textarea>
+                                        <span asp-validation-for="Description" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="mb-3">
+                                        <div class="form-group form-check text-center">
+                                            <label asp-for="ImageFormFile" class="control-label fs-3">Choose a Project Image</label>
+                                            <input type="file" asp-for="ImageFormFile" class="form-control" accept=".png,.jpg,.jpeg,.gif,.tif"
+                                                   style="border:0px!important;padding: 0px;padding-bottom:30px;"
+                                                   onchange="document.getElementById('imageData').src = window.URL.createObjectURL(this.files[0])">
+                                            <span asp-validation-for="ImageFormFile" class="text-danger"></span>
+                                        </div>
+                                        <div class="col col-md-12 text-center">
+                                            <img id="imageData" class="img-fluid img-thumbnail" style="width:900px;height:700px" src="@_FileService.ConvertByteArrayToFile(Model.ImageFileData!, Model.ImageFileType!, 3)"  />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <input type="submit" value="Save" class="btn btn-primary" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*<h1>Edit</h1>
 
 <h4>Project</h4>
 <hr />
@@ -70,7 +161,7 @@
 
 <div>
     <a asp-action="Index">Back to List</a>
-</div>
+</div>*@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

@@ -6,81 +6,28 @@
 
 <h1>Archive</h1>
 
-<h4>Are you sure you want to archive this?</h4>
-<div>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Created)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Created)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StartDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StartDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EndDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EndDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageFileName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageFileName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageFileType)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageFileType)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageFileData)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageFileData)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Archived)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Archived)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Company)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Company!.CompanyName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ProjectPriority)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ProjectPriority!.Name)
-        </dd>
-    </dl>
-    
-    <form asp-action="Archive">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Archive" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+<div class="container-fluid">
+    <div class="row project-cards justify-content-center">
+        <div class="col-md-4 project-list">
+            <div class="card">
+                <h5>Are you want to archive @Model.Name</h5>
+                <hr />
+                <dl class="row">
+                    <dt class="col-sm-6">
+                        @Html.DisplayNameFor(model => model.Name)
+                    </dt>
+                    <dd class="col-sm-6">
+                        @Html.DisplayFor(model => model.Name)
+                    </dd>
+                </dl>
+                <div>
+                    <form asp-action="Archive">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="submit" value="Archive" class="btn btn-danger" />
+                        <a class="btn btn-primary" asp-action="Index">Back to List</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
