@@ -226,7 +226,9 @@ namespace NovaBugTracker.Controllers
                 await _ticketHistoryService.AddHistoryAsync(ticketComment.TicketId, nameof(TicketComment), (ticketComment.UserId));
                 return RedirectToAction("Details", "Tickets", new { id = ticketComment.TicketId });
             }
+#pragma warning disable CS8974 // Converting method group to non-delegate type
             return View(Details);
+#pragma warning restore CS8974 // Converting method group to non-delegate type
         }
 
         public async Task<IActionResult> ShowFile(int id)

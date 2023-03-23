@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NovaBugTracker.Controllers;
 using NovaBugTracker.Data;
@@ -37,13 +38,18 @@ namespace NovaBugTrackerTests.Controllers
 
         public HomeControllerTests()
         {
+            // Create an instance of the database context options
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: "test_db")
+                .Options;
+
             //Dependencies
             _logger = A.Fake<ILogger<HomeController>>();
             _userManager = A.Fake<UserManager<BTUser>>();
             _projectService = A.Fake<IBTProjectService>();
             _companyService = A.Fake<IBTCompanyService>();
             _ticketService = A.Fake<IBTTicketService>();
-            _context = A.Fake<ApplicationDbContext>();
+            _context = new ApplicationDbContext(optionsBuilder);
             _signInManager = A.Fake<SignInManager<BTUser>>();
 
             _controller = new HomeController(
