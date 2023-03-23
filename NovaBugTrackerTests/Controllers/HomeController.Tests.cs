@@ -20,7 +20,8 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NovaBugTracker.Tests.Controllers
+
+namespace NovaBugTrackerTests.Controllers
 {
     public class HomeControllerTests
     {
@@ -151,6 +152,40 @@ namespace NovaBugTracker.Tests.Controllers
         }
 
         [Fact]
+        public void AMCharts_Returns_Expected_JSONData_Success()
+        {
+            // Arrange
+            var userManager = A.Fake<UserManager<BTUser>>();
+            var projectService = A.Fake<IBTProjectService>();
+            var controller = new HomeController(
+                A.Fake<ILogger<HomeController>>(),
+                userManager,
+                projectService,
+                A.Fake<IBTCompanyService>(),
+                A.Fake<IBTTicketService>(),
+                A.Fake<ApplicationDbContext>(),
+                A.Fake<SignInManager<BTUser>>());
+
+            // Create a fake user and set it as the current user
+            var user = new BTUser { CompanyId = 1 };
+            A.CallTo(() => userManager.GetUserAsync(controller.User))
+                .Returns(user);
+
+            // Create some fake projects
+            var project1 = new Project { Id = 1, Name = "Project 1", Tickets = new List<Ticket>(), Archived = false };
+            var project2 = new Project { Id = 2, Name = "Project 2", Tickets = new List<Ticket>(), Archived = false };
+            A.CallTo(() => projectService.GetAllProjectsByCompanyIdAsync(user.CompanyId))
+                .Returns(new List<Project> { project1, project2 });
+
+            // Act
+            var result = controller.AmCharts().Result as JsonResult;
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Value.Should().BeOfType<AmItem[]>();
+        }
+
+        [Fact]
         public async Task PlotlyBarChart_Returns_JsonResult_With_BarData()
         {
             // Arrange
@@ -204,8 +239,9 @@ namespace NovaBugTracker.Tests.Controllers
             var result = fakeController.Privacy();
 
             // Assert
-            result.Should().BeOfType<ViewResult>(); 
+            result.Should().BeOfType<ViewResult>();
         }
 
     }
+
 }
