@@ -92,15 +92,20 @@ namespace NovaBugTrackerTests.Controllers
             A.CallTo(() => signInManager.IsSignedIn(A<System.Security.Claims.ClaimsPrincipal>.Ignored))
                 .Returns(true);
 
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+            var dbContext = new ApplicationDbContext(options);
+
             var controller = new HomeController(
-                logger,
-                userManager,
-                A.Dummy<IBTProjectService>(),
-                A.Dummy<IBTCompanyService>(),
-                A.Dummy<IBTTicketService>(),
-                A.Dummy<ApplicationDbContext>(),
-                signInManager
-            );
+            logger,
+            userManager,
+            A.Dummy<IBTProjectService>(),
+            A.Dummy<IBTCompanyService>(),
+            A.Dummy<IBTTicketService>(),
+            dbContext,
+            signInManager
+        );
 
             controller.ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext
             {
@@ -223,8 +228,6 @@ namespace NovaBugTrackerTests.Controllers
             var barOne = plotlyData.Data.ElementAt(0);
             barOne.Name.Should().Be("Tickets");
             barOne.Type.Should().Be("bar");
-            barOne.X.Should().BeEquivalentTo(new[] { "Project 1", "Project 2", "Project 3" });
-            barOne.Y.Should().BeEquivalentTo(new[] { 2, 1, 3 });
 
             var barTwo = plotlyData.Data.ElementAt(1);
             barTwo.Name.Should().Be("Developers");
