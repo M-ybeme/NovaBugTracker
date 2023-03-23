@@ -52,6 +52,9 @@ namespace NovaBugTrackerTests.Controllers
             _context = new ApplicationDbContext(optionsBuilder);
             _signInManager = A.Fake<SignInManager<BTUser>>();
 
+            // Ensure that the database schema is created
+            _context.Database.EnsureCreated();
+
             _controller = new HomeController(
                 _logger,
                 _userManager,
@@ -151,7 +154,7 @@ namespace NovaBugTrackerTests.Controllers
                 A.Dummy<IBTProjectService>(),
                 A.Dummy<IBTCompanyService>(),
                 A.Dummy<IBTTicketService>(),
-                A.Dummy<ApplicationDbContext>(),
+                _context,
                 signInManager
             );
 
@@ -174,7 +177,7 @@ namespace NovaBugTrackerTests.Controllers
                 projectService,
                 A.Fake<IBTCompanyService>(),
                 A.Fake<IBTTicketService>(),
-                A.Fake<ApplicationDbContext>(),
+                _context,
                 A.Fake<SignInManager<BTUser>>());
 
             // Create a fake user and set it as the current user
@@ -241,11 +244,17 @@ namespace NovaBugTrackerTests.Controllers
         public void Privacy_ReturnsView_Success()
         {
             // Arrange
-            var fakeController = A.Fake<HomeController>();
-            A.CallTo(() => fakeController.Privacy()).Returns(new ViewResult());
+            var controller = new HomeController(
+                _logger,
+                _userManager,
+                _projectService,
+                _companyService,
+                _ticketService,
+                _context,
+                _signInManager);
 
             // Act
-            var result = fakeController.Privacy();
+            var result = controller.Privacy();
 
             // Assert
             result.Should().BeOfType<ViewResult>();
