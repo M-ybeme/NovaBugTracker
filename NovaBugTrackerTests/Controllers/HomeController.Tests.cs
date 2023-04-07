@@ -85,7 +85,7 @@ namespace NovaBugTrackerTests.Controllers
         }
 
         [Fact]
-        public void Index_WhenUserIsSignedIn_RedirectsToDashboard_Success()
+        public void HomeController_Index_WhenUserIsSignedIn_RedirectsToDashboard_Success()
         {
             // Arrange
             var userManager = A.Fake<UserManager<BTUser>>();
@@ -138,7 +138,7 @@ namespace NovaBugTrackerTests.Controllers
         }
 
         [Fact]
-        public void Index_WhenUserIsNotSignedIn_ReturnsView_Success()
+        public void HomeController_Index_WhenUserIsNotSignedIn_ReturnsView_Success()
         {
             // Arrange
             var userManager = A.Fake<UserManager<BTUser>>();
@@ -166,7 +166,7 @@ namespace NovaBugTrackerTests.Controllers
         }
 
         [Fact]
-        public void AMCharts_Returns_Expected_JSONData_Success()
+        public void HomeController_AMCharts_Returns_Expected_JSONData_Success()
         {
             // Arrange
             var userManager = A.Fake<UserManager<BTUser>>();
@@ -200,7 +200,7 @@ namespace NovaBugTrackerTests.Controllers
         }
 
         [Fact]
-        public async Task PlotlyBarChart_Returns_JsonResult_With_BarData()
+        public void HomeController_PlotlyBarChart_Returns_JsonResult_With_BarData()
         {
             // Arrange
             var user = new BTUser
@@ -220,7 +220,7 @@ namespace NovaBugTrackerTests.Controllers
                 .Returns(projects);
 
             // Act
-            var result = await _controller.PlotlyBarChart() as JsonResult;
+            var result = _controller.PlotlyBarChart().Result as JsonResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -241,7 +241,7 @@ namespace NovaBugTrackerTests.Controllers
 
 
         [Fact]
-        public void Privacy_ReturnsView_Success()
+        public void HomeController_Privacy_ReturnsView_Success()
         {
             // Arrange
             var controller = new HomeController(
