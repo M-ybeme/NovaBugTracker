@@ -9,69 +9,6 @@
 
 
 
-@*<div class="container-fluid user-card">
-    <div class="row">
-        @foreach( var member in Model)
-            {
-                @if(_userManager.GetUserId(User) == member.BTUser!.Id)
-                {
-                <div class="col-md-6 col-lg-6 col-xl-4 box-col-6">
-                    <div class="card custom-card">
-                        <div class="card-header"><img class="img-fluid" src="~/Img/Collaboration-amico.png" alt=""></div>
-                        <div class="card-profile"><i data-feather="user"></i></div>
-                        <div class="text-center profile-details">
-                            <a href="user-profile.html">
-                                <h4>@member.BTUser.FullName</h4>
-                            </a>
-                            <h6>@member.Roles</h6>
-                        </div>
-                        <div class="card-footer row">
-                            <div class="col-4 col-sm-4">
-                                <h6>Follower</h6>
-                                <h3 class="counter">9564</h3>
-                            </div>
-                            <div class="col-4 col-sm-4">
-                                <h6>Following</h6>
-                                <h3><span class="counter">49</span>K</h3>
-                            </div>
-                            <div class="col-4 col-sm-4">
-                                <h6>Total Post</h6>
-                                <h3><span class="counter">96</span>M</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                }else{
-                    <div class="col-md-6 col-lg-6 col-xl-4 box-col-6">
-                    <div class="card custom-card">
-                        <div class="card-header"><img class="img-fluid" src="~/Img/Collaboration-amico.png" alt=""></div>
-                        <div class="card-profile"><i data-feather="user"></i></div>
-                        <div class="text-center profile-details">
-                            <a href="user-profile.html">
-                                <h4>Mark Jecno</h4>
-                            </a>
-                            <h6>Manager</h6>
-                        </div>
-                        <div class="card-footer row">
-                            <div class="col-4 col-sm-4">
-                                <h6>Follower</h6>
-                                <h3 class="counter">9564</h3>
-                            </div>
-                            <div class="col-4 col-sm-4">
-                                <h6>Following</h6>
-                                <h3><span class="counter">49</span>K</h3>
-                            </div>
-                            <div class="col-4 col-sm-4">
-                                <h6>Total Post</h6>
-                                <h3><span class="counter">96</span>M</h3>
-                            </div>
-                        </div>
-                    </div>
-            }
-    </div>
-</div>*@
-
-
 
 
 <div class="row">
