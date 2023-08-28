@@ -79,16 +79,16 @@
                 @Html.DisplayFor(modelItem => item.IsValid)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Company.CompanyName)
+                @Html.DisplayFor(modelItem => item.Company!.CompanyName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Project.Description)
+                @Html.DisplayFor(modelItem => item.Project!.Description)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Invitor.Id)
+                @Html.DisplayFor(modelItem => item.Invitor!.Id)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Invitee.Id)
+                @Html.DisplayFor(modelItem => item.Invitee!.Id)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

@@ -76,7 +76,7 @@ namespace NovaBugTracker.Controllers
             //Bar One
             PlotlyBar barOne = new()
             {
-                X = projects.Select(p => p.Name).ToArray(),
+                X = projects.Select(p => p.Name!).ToArray(),
                 Y = projects.SelectMany(p => p.Tickets).GroupBy(t => t.ProjectId).Select(g => g.Count()).ToArray(),
                 Name = "Tickets",
                 Type = "bar"

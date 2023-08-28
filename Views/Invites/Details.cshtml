@@ -62,25 +62,25 @@
             @Html.DisplayNameFor(model => model.Company)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Company.CompanyName)
+            @Html.DisplayFor(model => model.Company!.CompanyName)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Project)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Project.Description)
+            @Html.DisplayFor(model => model.Project!.Description)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Invitor)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Invitor.Id)
+            @Html.DisplayFor(model => model.Invitor!.Id)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Invitee)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Invitee.Id)
+            @Html.DisplayFor(model => model.Invitee!.Id)
         </dd>
     </dl>
 </div>
